@@ -18,7 +18,6 @@
   },
   "scripts": {
     "build": "vite build",
-    "prepare": "pnpm run build",
     "watch": "NODE_ENV=development vite build --watch --mode development"
   },
   "publishConfig": {
@@ -43,7 +42,7 @@
     "vite-plugin-dts": "^4.3.0"
   },
   "peerDependencies": {
-    "react": "^16.8.0 || ^17.0.0 || ^18.0.0",
-    "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0"
+    "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0",
+    "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
   }
 }

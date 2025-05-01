@@ -11,12 +11,7 @@ export default defineConfig({
       fileName: (format) => `connect-react.${format}.js`,
     },
     rollupOptions: {
-      external: [
-        "@emotion/react",
-        "react",
-        "react-dom",
-        "react/jsx-runtime",
-      ],
+      external: ["@emotion/react", "react", "react-dom", "react/jsx-runtime"],
       output: {
         globals: {
           react: "React",
@@ -28,9 +23,6 @@ export default defineConfig({
     },
   },
   resolve: {
-    alias: {
-      "decode-named-character-reference": "../../node_modules/decode-named-character-reference/index.js",
-    },
     dedupe: ["@emotion/react"],
   },
   plugins: [
