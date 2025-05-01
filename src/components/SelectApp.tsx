@@ -1,22 +1,16 @@
-import {
-  useId, useState,
-} from "react";
-import Select, { components } from "react-select";
-import { useApps } from "../hooks/use-apps";
 import { AppResponse } from "@pipedream/sdk";
+import { useId, useState } from "react";
+import Select, { components } from "react-select";
+
+import { useApps } from "../hooks/use-apps";
 
 type SelectAppProps = {
-  value?: Partial<AppResponse> & { name_slug: string; };
+  value?: Partial<AppResponse> & { name_slug: string };
   onChange?: (app?: AppResponse) => void;
 };
 
-export function SelectApp({
-  value, onChange,
-}: SelectAppProps) {
-  const [
-    q,
-    setQ,
-  ] = useState(""); // XXX can we just use Select ref.value instead?
+export function SelectApp({ value, onChange }: SelectAppProps) {
+  const [q, setQ] = useState(""); // XXX can we just use Select ref.value instead?
   const instanceId = useId();
   const {
     isLoading,
@@ -25,11 +19,9 @@ export function SelectApp({
   } = useApps({
     q,
   });
-  const {
-    Option,
-    SingleValue,
-  } = components;
-  const selectedValue = apps?.find((o) => o.name_slug === value?.name_slug) || null;
+  const { Option, SingleValue } = components;
+  const selectedValue =
+    apps?.find((o) => o.name_slug === value?.name_slug) || null;
   return (
     <Select
       instanceId={instanceId}
@@ -38,10 +30,12 @@ export function SelectApp({
       components={{
         Option: (optionProps) => (
           <Option {...optionProps}>
-            <div style={{
-              display: "flex",
-              gap: 10,
-            }}>
+            <div
+              style={{
+                display: "flex",
+                gap: 10,
+              }}
+            >
               <img
                 src={`https://pipedream.com/s.v0/${optionProps.data.id}/logo/48`}
                 style={{
@@ -50,19 +44,25 @@ export function SelectApp({
                 }}
                 alt={optionProps.data.name}
               />
-              <span style={{
-                whiteSpace: "nowrap",
-              }}>{optionProps.data.name}</span>
+              <span
+                style={{
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {optionProps.data.name}
+              </span>
             </div>
           </Option>
         ),
         SingleValue: (singleValueProps) => (
           <SingleValue {...singleValueProps}>
-            <div style={{
-              display: "flex",
-              gap: 10,
-              alignItems: "center",
-            }}>
+            <div
+              style={{
+                display: "flex",
+                gap: 10,
+                alignItems: "center",
+              }}
+            >
               <img
                 src={`https://pipedream.com/s.v0/${singleValueProps.data.id}/logo/48`}
                 style={{
@@ -71,9 +71,11 @@ export function SelectApp({
                 }}
                 alt={singleValueProps.data.name}
               />
-              <span style={{
-                whiteSpace: "nowrap",
-              }}>
+              <span
+                style={{
+                  whiteSpace: "nowrap",
+                }}
+              >
                 {singleValueProps.data.name}
               </span>
             </div>
@@ -87,7 +89,7 @@ export function SelectApp({
       value={selectedValue}
       onChange={(o) => onChange?.((o as AppResponse) || undefined)}
       onInputChange={(v) => {
-        if (v) setQ(v)
+        if (v) setQ(v);
       }}
       isLoading={isLoading}
     />

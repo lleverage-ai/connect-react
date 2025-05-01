@@ -1,15 +1,14 @@
-import Select, { components as ReactSelectComponents } from "react-select";
-import { useFrontendClient } from "../hooks/frontend-client-context";
-import { useAccounts } from "../hooks/use-accounts";
-import { useFormFieldContext } from "../hooks/form-field-context";
-import { useCustomize } from "../hooks/customization-context";
-import type { BaseReactSelectProps } from "../hooks/customization-context";
+import type { AppResponse, ConfigurablePropApp } from "@pipedream/sdk";
 import { useMemo } from "react";
 import type { CSSProperties } from "react";
+import Select, { components as ReactSelectComponents } from "react-select";
 import type { OptionProps } from "react-select";
-import type {
-  AppResponse, ConfigurablePropApp,
-} from "@pipedream/sdk";
+
+import { useCustomize } from "../hooks/customization-context";
+import type { BaseReactSelectProps } from "../hooks/customization-context";
+import { useFormFieldContext } from "../hooks/form-field-context";
+import { useFrontendClient } from "../hooks/frontend-client-context";
+import { useAccounts } from "../hooks/use-accounts";
 
 const BaseOption = (props: OptionProps<AppResponse>) => {
   // const imgSrc =
@@ -29,13 +28,9 @@ type ControlAppProps = {
 export function ControlApp({ app }: ControlAppProps) {
   const client = useFrontendClient();
   const formFieldCtx = useFormFieldContext<ConfigurablePropApp>();
-  const {
-    id, prop, value, onChange,
-  } = formFieldCtx;
+  const { id, prop, value, onChange } = formFieldCtx;
 
-  const {
-    getProps, select, theme,
-  } = useCustomize();
+  const { getProps, select, theme } = useCustomize();
 
   const baseStyles: CSSProperties = {
     color: theme.colors.neutral60,
@@ -63,7 +58,7 @@ export function ControlApp({ app }: ControlAppProps) {
       }),
     },
   };
-  const selectProps =  select.getProps("controlAppSelect", baseSelectProps);
+  const selectProps = select.getProps("controlAppSelect", baseSelectProps);
 
   const oauthAppId = undefined; // XXX allow customizing
   const {
@@ -111,62 +106,65 @@ export function ControlApp({ app }: ControlAppProps) {
       }
     }
     return ret;
-  }, [
-    accounts,
-    value,
-  ]);
+  }, [accounts, value]);
 
   // XXX loading / skeleton hooks
   return (
-    <div {...getProps("controlApp", baseStyles, {
-      app,
-      ...formFieldCtx,
-    })}>
-      {isLoadingAccounts ?
+    <div
+      {...getProps("controlApp", baseStyles, {
+        app,
+        ...formFieldCtx,
+      })}
+    >
+      {isLoadingAccounts ? (
         `Loading ${app.name} accounts...`
-        : accounts.length ?
-          <Select
-            instanceId={id}
-            value={selectValue}
-            options={[
-              ...accounts,
-              {
-                id: "_new",
-                name: `Connect new ${app.name} account...`,
-              },
-            ]}
-            {...selectProps}
-            required={true}
-            placeholder={`Select ${app.name} account...`}
-            isLoading={isLoadingAccounts}
-            isClearable={true}
-            isSearchable={true}
-            getOptionLabel={(a) => a.name}
-            getOptionValue={(a) => a.id}
-            onChange={(a) => {
-              if (a) {
-                if (a.id === "_new") {
+      ) : accounts.length ? (
+        <Select
+          instanceId={id}
+          value={selectValue}
+          options={[
+            ...accounts,
+            {
+              id: "_new",
+              name: `Connect new ${app.name} account...`,
+            },
+          ]}
+          {...selectProps}
+          required={true}
+          placeholder={`Select ${app.name} account...`}
+          isLoading={isLoadingAccounts}
+          isClearable={true}
+          isSearchable={true}
+          getOptionLabel={(a) => a.name}
+          getOptionValue={(a) => a.id}
+          onChange={(a) => {
+            if (a) {
+              if (a.id === "_new") {
                 // start connect account and then select it, etc.
                 // TODO unset / put in loading state
-                  startConnectAccount();
-                } else {
-                  onChange({
-                    authProvisionId: a.id,
-                  });
-                }
+                startConnectAccount();
               } else {
-                onChange(undefined);
+                onChange({
+                  authProvisionId: a.id,
+                });
               }
-            }}
-          />
-          :
-          <button type="button" {...getProps("connectButton", baseStylesConnectButton, {
+            } else {
+              onChange(undefined);
+            }
+          }}
+        />
+      ) : (
+        <button
+          type="button"
+          {...getProps("connectButton", baseStylesConnectButton, {
             app,
             ...formFieldCtx,
-          })} onClick={() => startConnectAccount()}>
+          })}
+          onClick={() => startConnectAccount()}
+        >
           Connect {app.name}
-          </button>
-      }
+        </button>
+      )}
     </div>
   );
 }

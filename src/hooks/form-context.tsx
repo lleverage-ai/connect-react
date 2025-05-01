@@ -1,23 +1,39 @@
-import {
-  createContext, useContext, useEffect, useId, useState, type ReactNode,
-} from "react";
-import isEqual from "lodash.isequal";
-import { useQuery } from "@tanstack/react-query";
 import type {
-  ConfigurableProp, ConfigurableProps, ConfiguredProps, ReloadComponentPropsOpts, V1Component,
+  ComponentReloadPropsOpts,
+  ConfigurableProp,
+  ConfigurableProps,
+  ConfiguredProps,
+  V1Component,
 } from "@pipedream/sdk";
-import { useFrontendClient } from "./frontend-client-context";
-import type { ComponentFormProps } from "../components/ComponentForm";
-import type { FormFieldContext } from "./form-field-context";
+import { useQuery } from "@tanstack/react-query";
+import _ from "lodash";
+import isEqual from "lodash.isequal";
 import {
-  appPropErrors, arrayPropErrors, booleanPropErrors, integerPropErrors,
+  type ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useId,
+  useState,
+} from "react";
+
+import type { ComponentFormProps } from "../components/ComponentForm";
+import { Observation, SdkError } from "../types";
+import {
+  appPropErrors,
+  arrayPropErrors,
+  booleanPropErrors,
+  integerPropErrors,
   stringPropErrors,
 } from "../utils/component";
-import {
-  Observation, SdkError,
-} from "../types";
 
-export type DynamicProps<T extends ConfigurableProps> = { id: string; configurableProps: T; }; // TODO
+import type { FormFieldContext } from "./form-field-context";
+import { useFrontendClient } from "./frontend-client-context";
+
+export type DynamicProps<T extends ConfigurableProps> = {
+  id: string;
+  configurableProps: T;
+}; // TODO
 
 export type FormContext<T extends ConfigurableProps> = {
   component: V1Component<T>;
@@ -35,7 +51,9 @@ export type FormContext<T extends ConfigurableProps> = {
   props: ComponentFormProps<T>;
   propsNeedConfiguring: string[];
   queryDisabledIdx?: number;
-  registerField: <T extends ConfigurableProp>(field: FormFieldContext<T>) => void;
+  registerField: <T extends ConfigurableProp>(
+    field: FormFieldContext<T>,
+  ) => void;
   setConfiguredProp: (idx: number, value: unknown) => void; // XXX type safety for value (T will rarely be static right?)
   setSubmitting: (submitting: boolean) => void;
   submitting: boolean;
@@ -48,9 +66,11 @@ export const skippablePropTypes = [
   "$.interface.http",
   "$.interface.apphook",
   "$.interface.timer", // TODO add support for this (cron string and timers)
-]
+];
 
-export const FormContext = createContext<FormContext<any /* XXX fix */> | undefined>(undefined); // eslint-disable-line @typescript-eslint/no-explicit-any
+export const FormContext = createContext<
+  FormContext<any /* XXX fix */> | undefined
+>(undefined); // eslint-disable-line @typescript-eslint/no-explicit-any
 
 export const useFormContext = () => {
   const context = useContext(FormContext);
@@ -70,70 +90,77 @@ type FormContextProviderProps<T extends ConfigurableProps> = {
 };
 
 export const FormContextProvider = <T extends ConfigurableProps>({
-  children, props: formProps,
+  children,
+  props: formProps,
 }: FormContextProviderProps<T>) => {
   const client = useFrontendClient();
 
   const id = useId();
 
   const {
-    component, configuredProps: __configuredProps, propNames, userId, sdkResponse, enableDebugging,
+    component,
+    configuredProps: __configuredProps,
+    propNames,
+    userId,
+    sdkResponse,
+    enableDebugging,
   } = formProps;
   const componentId = component.key;
 
-  const [
-    queryDisabledIdx,
-    setQueryDisabledIdx,
-  ] = useState<number | undefined>(0);
-  const [
-    fields,
-    setFields,
-  ] = useState<Record<string, FormFieldContext<ConfigurableProp>>>({});
-  const [
-    submitting,
-    setSubmitting,
-  ] = useState(false);
-  const [
-    errors,
-    setErrors,
-  ] = useState<Record<string, string[]>>({});
+  const [queryDisabledIdx, setQueryDisabledIdx] = useState<number | undefined>(
+    0,
+  );
+  const [fields, setFields] = useState<
+    Record<string, FormFieldContext<ConfigurableProp>>
+  >({});
+  const [submitting, setSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string[]>>({});
 
-  const [
-    sdkErrors,
-    setSdkErrors,
-  ] = useState<SdkError[]>([])
+  const [sdkErrors, setSdkErrors] = useState<SdkError[]>([]);
 
-  const [
-    enabledOptionalProps,
-    setEnabledOptionalProps,
-  ] = useState<Record<string, boolean>>({});
+  const [enabledOptionalProps, setEnabledOptionalProps] = useState<
+    Record<string, boolean>
+  >({});
+
+  // TODO: Added this change so that any configured props that are optional props that have a value are displayed
   useEffect(() => {
-    setEnabledOptionalProps({});
-  }, [
-    component.key,
-  ]);
-  // XXX pass this down? (in case we make it hash or set backed, but then also provide {add,remove} instead of set)
-  const optionalPropIsEnabled = (prop: ConfigurableProp) => enabledOptionalProps[prop.name];
+    const newEnabledProps: Record<string, boolean> = {};
 
-  let configuredProps = __configuredProps || {} as ConfiguredProps<T>;
-  const [
-    _configuredProps,
-    _setConfiguredProps,
-  ] = useState(configuredProps);
-  const setConfiguredProps = formProps.onUpdateConfiguredProps || _setConfiguredProps;
+    const configurableProps = component.configurable_props || [];
+
+    for (const prop of configurableProps) {
+      if (prop.optional) {
+        const propName = prop.name as keyof ConfiguredProps<T>;
+        const propValue = configuredProps[propName];
+
+        if (propValue !== undefined && propValue !== null && propValue !== "") {
+          newEnabledProps[prop.name] = true;
+        }
+      }
+    }
+
+    setEnabledOptionalProps(newEnabledProps);
+  }, [component.key, __configuredProps]);
+  // TODO: instead of this:
+  // useEffect(() => {
+  //   setEnabledOptionalProps({});
+  // }, [component.key]);
+
+  // XXX pass this down? (in case we make it hash or set backed, but then also provide {add,remove} instead of set)
+  const optionalPropIsEnabled = (prop: ConfigurableProp) =>
+    enabledOptionalProps[prop.name];
+
+  let configuredProps = __configuredProps || ({} as ConfiguredProps<T>);
+  const [_configuredProps, _setConfiguredProps] = useState(configuredProps);
+  const setConfiguredProps =
+    formProps.onUpdateConfiguredProps || _setConfiguredProps;
   if (!formProps.onUpdateConfiguredProps) {
     configuredProps = _configuredProps;
   }
 
-  const [
-    dynamicProps,
-    setDynamicProps,
-  ] = useState<DynamicProps<T>>();
-  const [
-    reloadPropIdx,
-    setReloadPropIdx,
-  ] = useState<number>();
-  const componentReloadPropsInput: ReloadComponentPropsOpts = {
+  const [dynamicProps, setDynamicProps] = useState<DynamicProps<T>>();
+  const [reloadPropIdx, setReloadPropIdx] = useState<number>();
+  const componentReloadPropsInput: ComponentReloadPropsOpts = {
     userId,
     componentId,
     configuredProps,
@@ -141,27 +168,27 @@ export const FormContextProvider = <T extends ConfigurableProps>({
   };
   const queryKeyInput = {
     ...componentReloadPropsInput,
-  }
+  };
 
   const {
     isFetching: dynamicPropsQueryIsFetching,
     // TODO error
   } = useQuery({
-    queryKey: [
-      "dynamicProps",
-      queryKeyInput,
-    ],
+    queryKey: ["dynamicProps", queryKeyInput],
     queryFn: async () => {
-      const result = await client.reloadComponentProps(componentReloadPropsInput);
-      const {
-        dynamicProps, observations, errors: __errors,
-      } = result
+      const result = await client.componentReloadProps(
+        componentReloadPropsInput,
+      );
+      const { dynamicProps, observations, errors: __errors } = result;
 
       // Prioritize errors from observations over the errors array
-      if (observations && observations.filter((o) => o.k === "error").length > 0) {
-        handleSdkErrors(observations)
+      if (
+        observations &&
+        observations.filter((o) => o.k === "error").length > 0
+      ) {
+        handleSdkErrors(observations);
       } else {
-        handleSdkErrors(__errors)
+        handleSdkErrors(__errors);
       }
 
       // XXX what about if null?
@@ -176,18 +203,18 @@ export const FormContextProvider = <T extends ConfigurableProps>({
     enabled: reloadPropIdx != null, // TODO or props.dynamicPropsId && !dynamicProps
   });
 
-  const [
-    propsNeedConfiguring,
-    setPropsNeedConfiguring,
-  ] = useState<string[]>([]);
+  const [propsNeedConfiguring, setPropsNeedConfiguring] = useState<string[]>(
+    [],
+  );
   useEffect(() => {
-    checkPropsNeedConfiguring()
-  }, [
-    configuredProps,
-  ]);
+    checkPropsNeedConfiguring();
+  }, [configuredProps]);
 
   // XXX fix types of dynamicProps, props.component so this type decl not needed
-  let configurableProps: T = dynamicProps?.configurableProps || formProps.component.configurable_props || [];
+  let configurableProps: T =
+    dynamicProps?.configurableProps ||
+    formProps.component.configurable_props ||
+    [];
   if (propNames?.length) {
     const _configurableProps = [];
     for (const prop of configurableProps) {
@@ -199,51 +226,72 @@ export const FormContextProvider = <T extends ConfigurableProps>({
     configurableProps = _configurableProps as unknown as T; // XXX
   }
   if (reloadPropIdx != null) {
-    configurableProps = configurableProps.slice(0, reloadPropIdx + 1) as unknown as T; // XXX
+    configurableProps = configurableProps.slice(
+      0,
+      reloadPropIdx + 1,
+    ) as unknown as T; // XXX
   }
 
   // these validations are necessary because they might override PropInput for number case for instance
   // so can't rely on that base control form validation
   const propErrors = (prop: ConfigurableProp, value: unknown): string[] => {
     const errs: string[] = [];
-    if (prop.optional || prop.hidden || prop.disabled || skippablePropTypes.includes(prop.type)) return []
+    if (
+      prop.optional ||
+      prop.hidden ||
+      prop.disabled ||
+      skippablePropTypes.includes(prop.type)
+    )
+      return [];
     if (prop.type === "app") {
-      const field = fields[prop.name]
+      const field = fields[prop.name];
       if (field) {
-        const app = field.extra.app
-        errs.push(...(appPropErrors({
-          prop,
-          value,
-          app,
-        }) ?? []))
+        const app = field.extra.app;
+        errs.push(
+          ...(appPropErrors({
+            prop,
+            value,
+            app,
+          }) ?? []),
+        );
       } else {
-        errs.push("field not registered")
+        errs.push("field not registered");
       }
     } else if (prop.type === "boolean") {
-      errs.push(...(booleanPropErrors({
-        prop,
-        value,
-      }) ?? []))
+      errs.push(
+        ...(booleanPropErrors({
+          prop,
+          value,
+        }) ?? []),
+      );
     } else if (prop.type === "integer") {
-      errs.push(...(integerPropErrors({
-        prop,
-        value,
-      }) ?? []))
+      errs.push(
+        ...(integerPropErrors({
+          prop,
+          value,
+        }) ?? []),
+      );
     } else if (prop.type === "string") {
-      errs.push(...(stringPropErrors({
-        prop,
-        value,
-      }) ?? []))
+      errs.push(
+        ...(stringPropErrors({
+          prop,
+          value,
+        }) ?? []),
+      );
     } else if (prop.type === "string[]") {
-      errs.push(...(arrayPropErrors({
-        prop,
-        value,
-      }) ?? []))
+      errs.push(
+        ...(arrayPropErrors({
+          prop,
+          value,
+        }) ?? []),
+      );
     }
     return errs;
   };
 
-  const updateConfiguredPropsQueryDisabledIdx = (configuredProps: ConfiguredProps<T>) => {
+  const updateConfiguredPropsQueryDisabledIdx = (
+    configuredProps: ConfiguredProps<T>,
+  ) => {
     let _queryDisabledIdx = undefined;
     for (let idx = 0; idx < configurableProps.length; idx++) {
       const prop = configurableProps[idx];
@@ -251,7 +299,11 @@ export const FormContextProvider = <T extends ConfigurableProps>({
         continue;
       }
       const value = configuredProps[prop.name as keyof ConfiguredProps<T>];
-      if (value === undefined && _queryDisabledIdx == null && (prop.type === "app" || prop.remoteOptions)) {
+      if (
+        value === undefined &&
+        _queryDisabledIdx == null &&
+        (prop.type === "app" || prop.remoteOptions)
+      ) {
         _queryDisabledIdx = idx;
         break;
       }
@@ -263,7 +315,7 @@ export const FormContextProvider = <T extends ConfigurableProps>({
   const updateConfiguredProps = (configuredProps: ConfiguredProps<T>) => {
     setConfiguredProps(configuredProps);
     updateConfiguredPropsQueryDisabledIdx(configuredProps);
-    updateConfigurationErrors(configuredProps)
+    updateConfigurationErrors(configuredProps);
   };
 
   const updateConfigurationErrors = (configuredProps: ConfiguredProps<T>) => {
@@ -283,24 +335,16 @@ export const FormContextProvider = <T extends ConfigurableProps>({
     // Initialize queryDisabledIdx on load so that we don't force users
     // to reconfigure a prop they've already configured whenever the page
     // or component is reloaded
-    updateConfiguredPropsQueryDisabledIdx(_configuredProps)
-  }, [
-    _configuredProps,
-  ]);
+    updateConfiguredPropsQueryDisabledIdx(_configuredProps);
+  }, [_configuredProps]);
 
   useEffect(() => {
-    updateConfigurationErrors(configuredProps)
-  }, [
-    configuredProps,
-    reloadPropIdx,
-    queryDisabledIdx,
-  ]);
+    updateConfigurationErrors(configuredProps);
+  }, [configuredProps, reloadPropIdx, queryDisabledIdx]);
 
   useEffect(() => {
-    handleSdkErrors(sdkResponse)
-  }, [
-    sdkResponse,
-  ]);
+    handleSdkErrors(sdkResponse);
+  }, [sdkResponse]);
 
   useEffect(() => {
     const newConfiguredProps: ConfiguredProps<T> = {};
@@ -318,7 +362,8 @@ export const FormContextProvider = <T extends ConfigurableProps>({
       const value = configuredProps[prop.name as keyof ConfiguredProps<T>];
       if (value === undefined) {
         if ("default" in prop && prop.default != null) {
-          newConfiguredProps[prop.name as keyof ConfiguredProps<T>] = prop.default;
+          newConfiguredProps[prop.name as keyof ConfiguredProps<T>] =
+            prop.default;
         }
       } else {
         if (prop.type === "integer" && typeof value !== "number") {
@@ -331,23 +376,16 @@ export const FormContextProvider = <T extends ConfigurableProps>({
     if (!isEqual(newConfiguredProps, configuredProps)) {
       updateConfiguredProps(newConfiguredProps);
     }
-  }, [
-    configurableProps,
-  ]);
+  }, [configurableProps]);
 
   // clear all props on user change
-  const [
-    prevUserId,
-    setPrevUserId,
-  ] = useState(userId)
+  const [prevUserId, setPrevUserId] = useState(userId);
   useEffect(() => {
     if (prevUserId !== userId) {
       updateConfiguredProps({});
-      setPrevUserId(userId)
+      setPrevUserId(userId);
     }
-  }, [
-    userId,
-  ]);
+  }, [userId]);
 
   // maybe should take prop as first arg but for text inputs didn't want to compute index each time
   const setConfiguredProp = (idx: number, value: unknown) => {
@@ -358,7 +396,8 @@ export const FormContextProvider = <T extends ConfigurableProps>({
     if (value === undefined) {
       delete newConfiguredProps[prop.name as keyof ConfiguredProps<T>];
     } else {
-      newConfiguredProps[prop.name as keyof ConfiguredProps<T>] = value as any /* XXX fix prop value type from T */; // eslint-disable-line @typescript-eslint/no-explicit-any
+      newConfiguredProps[prop.name as keyof ConfiguredProps<T>] =
+        value as any /* XXX fix prop value type from T */; // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     setConfiguredProps(newConfiguredProps);
     if (prop.reloadProps) {
@@ -391,7 +430,9 @@ export const FormContextProvider = <T extends ConfigurableProps>({
     const idx = configurableProps.findIndex((p) => p.name === prop.name);
     if (!enabled) {
       setConfiguredProp(idx, undefined);
-    } else if (__configuredProps?.[prop.name as keyof ConfiguredProps<T>] !== undefined) {
+    } else if (
+      __configuredProps?.[prop.name as keyof ConfiguredProps<T>] !== undefined
+    ) {
       setConfiguredProp(
         idx,
         __configuredProps[prop.name as keyof ConfiguredProps<T>],
@@ -403,13 +444,19 @@ export const FormContextProvider = <T extends ConfigurableProps>({
   };
 
   const checkPropsNeedConfiguring = () => {
-    const _propsNeedConfiguring = []
+    const _propsNeedConfiguring = [];
     for (const prop of configurableProps) {
-      if (!prop || prop.optional || prop.hidden || skippablePropTypes.includes(prop.type)) continue
-      const value = configuredProps[prop.name as keyof ConfiguredProps<T>]
-      const errors = propErrors(prop, value)
+      if (
+        !prop ||
+        prop.optional ||
+        prop.hidden ||
+        skippablePropTypes.includes(prop.type)
+      )
+        continue;
+      const value = configuredProps[prop.name as keyof ConfiguredProps<T>];
+      const errors = propErrors(prop, value);
       if (errors.length) {
-        _propsNeedConfiguring.push(prop.name)
+        _propsNeedConfiguring.push(prop.name);
       }
     }
     // propsNeedConfiguring.splice(0, propsNeedConfiguring.length, ..._propsNeedConfiguring)
@@ -420,71 +467,76 @@ export const FormContextProvider = <T extends ConfigurableProps>({
     // NB: The infinite loop is triggered because of calling
     // checkPropsNeedConfiguring() from registerField, which is called
     // from inside useEffect.
-    if (_propsNeedConfiguring && propsNeedConfiguring && isEqual(_propsNeedConfiguring, propsNeedConfiguring)) return;
+    if (
+      _propsNeedConfiguring &&
+      propsNeedConfiguring &&
+      _.isEqual(_propsNeedConfiguring, propsNeedConfiguring)
+    )
+      return;
 
-    setPropsNeedConfiguring(_propsNeedConfiguring)
-  }
+    setPropsNeedConfiguring(_propsNeedConfiguring);
+  };
 
-  const registerField = <T extends ConfigurableProp>(field: FormFieldContext<T>) => {
+  const registerField = <T extends ConfigurableProp>(
+    field: FormFieldContext<T>,
+  ) => {
     setFields((fields) => {
-      fields[field.prop.name] = field
-      return fields
+      fields[field.prop.name] = field;
+      return fields;
     });
-    checkPropsNeedConfiguring()
+    checkPropsNeedConfiguring();
   };
 
   const handleSdkErrors = (sdkResponse: unknown[] | unknown | undefined) => {
-    if (!sdkResponse) return
+    if (!sdkResponse) return;
 
-    let newErrors = [
-      ...sdkErrors,
-    ]
+    let newErrors = [...sdkErrors];
 
     const errorFromString = (item: string, ret: SdkError[]) => {
       try {
-        const json = JSON.parse(item)
+        const json = JSON.parse(item);
         const err: SdkError = {
           name: json.name,
           message: json.message,
-        }
+        };
         if (err.name && err.message) {
-          ret.push(err)
+          ret.push(err);
         }
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (e) {
         // pass
       }
-    }
+    };
 
     const errorFromObject = (item: unknown, ret: SdkError[]) => {
       const err: SdkError = {
         name: item.name,
         message: item.message,
-      }
+      };
       if (err.name && err.message) {
-        ret.push(err)
+        ret.push(err);
       }
-    }
+    };
 
     const errorFromObservationError = (item: Error, ret: SdkError[]) => {
       const err: SdkError = {
         name: item.err?.name,
         message: item.err?.message,
-      }
+      };
       if (err.name && err.message) {
-        ret.push(err)
+        ret.push(err);
       }
-    }
+    };
 
     const errorFromObservation = (payload: Observation, ret: SdkError[]) => {
-      const os = payload.os || payload.observations
+      const os = payload.os || payload.observations;
       if (Array.isArray(os) && os.length > 0) {
         for (let i = 0; i < os.length; i++) {
-          if (os[i].k !== "error") continue
-          errorFromObservationError(os[i], ret)
+          if (os[i].k !== "error") continue;
+          errorFromObservationError(os[i], ret);
         }
       }
-    }
+    };
 
     const errorFromDetails = (data: unknown, ret: SdkError[]) => {
       ret.push({
@@ -496,44 +548,51 @@ export const FormContextProvider = <T extends ConfigurableProps>({
         // \`\`\`
         // `,
         //   })
-      })
-    }
+      });
+    };
 
     const errorFromHttpError = (payload: Error, ret: SdkError[]) => {
       // Handle HTTP errors thrown by the SDK
       try {
-        const data = JSON.parse(payload.message)?.data
+        const data = JSON.parse(payload.message)?.data;
         if (data && "observations" in data) {
-          errorFromObservation(data, ret)
+          errorFromObservation(data, ret);
         } else if (data && "error" in data && "details" in data) {
-          errorFromDetails(data, ret)
+          errorFromDetails(data, ret);
         }
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (e) {
         // pass
       }
-    }
+    };
 
     if (Array.isArray(sdkResponse) && sdkResponse.length > 0) {
       for (let i = 0; i < sdkResponse.length; i++) {
-        const item = sdkResponse[i]
+        const item = sdkResponse[i];
         if (typeof item === "string") {
-          errorFromString(item, newErrors)
-        } else if (typeof item === "object" && "name" in item && "message" in item) {
-          errorFromObject(item, newErrors)
+          errorFromString(item, newErrors);
+        } else if (
+          typeof item === "object" &&
+          "name" in item &&
+          "message" in item
+        ) {
+          errorFromObject(item, newErrors);
         } else if (typeof item === "object" && item.k === "error") {
-          errorFromObservationError(item, newErrors)
+          errorFromObservationError(item, newErrors);
         }
       }
-    } else if (typeof sdkResponse === "object" && "os" in sdkResponse || "observations" in sdkResponse) {
-      errorFromObservation(sdkResponse, newErrors)
+    } else if (
+      (typeof sdkResponse === "object" && "os" in sdkResponse) ||
+      "observations" in sdkResponse
+    ) {
+      errorFromObservation(sdkResponse, newErrors);
     } else if (typeof sdkResponse === "object" && "message" in sdkResponse) {
-      errorFromHttpError(sdkResponse, newErrors)
+      errorFromHttpError(sdkResponse, newErrors);
     } else {
-      newErrors = []
+      newErrors = [];
     }
-    setSdkErrors(newErrors)
-  }
+    setSdkErrors(newErrors);
+  };
 
   // console.log("***", configurableProps, configuredProps)
   const value: FormContext<T> = {

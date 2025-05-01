@@ -1,9 +1,6 @@
-import {
-  useQuery, UseQueryOptions,
-} from "@tanstack/react-query";
-import type {
-  GetAccountOpts, AccountsRequestResponse,
-} from "@pipedream/sdk";
+import type { AccountsRequestResponse, GetAccountOpts } from "@pipedream/sdk";
+import { UseQueryOptions, useQuery } from "@tanstack/react-query";
+
 import { useFrontendClient } from "./frontend-client-context";
 
 /**
@@ -21,10 +18,7 @@ export const useAccounts = (
   const client = useFrontendClient();
   const query = useQuery<AccountsRequestResponse>({
     ...opts?.useQueryOpts,
-    queryKey: [
-      "accounts",
-      input,
-    ],
+    queryKey: ["accounts", input],
     queryFn: () => client.getAccounts(input),
   });
 

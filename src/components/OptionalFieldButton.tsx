@@ -1,6 +1,7 @@
 import { ConfigurableProp } from "@pipedream/sdk";
-import { useCustomize } from "../hooks/customization-context";
 import type { CSSProperties } from "react";
+
+import { useCustomize } from "../hooks/customization-context";
 
 export type OptionalFieldButtonProps = {
   prop: ConfigurableProp;
@@ -9,12 +10,8 @@ export type OptionalFieldButtonProps = {
 };
 
 export const OptionalFieldButton = (props: OptionalFieldButtonProps) => {
-  const {
-    prop, enabled, onClick,
-  } = props;
-  const {
-    getProps, theme,
-  } = useCustomize();
+  const { prop, enabled, onClick } = props;
+  const { getProps, theme } = useCustomize();
   const baseStyles: CSSProperties = {
     color: theme.colors.neutral60,
     display: "inline-flex",
@@ -31,13 +28,19 @@ export const OptionalFieldButton = (props: OptionalFieldButtonProps) => {
     textWrap: "nowrap",
   };
   return (
-    <button onClick={onClick} type="button" {...getProps("optionalFieldButton", baseStyles, props)}>
-      <span>{enabled
-        ? "-"
-        : "+"}</span>
-      <span style={{
-        marginRight: 8,
-      }}>{prop.label || prop.name}</span>
+    <button
+      onClick={onClick}
+      type="button"
+      {...getProps("optionalFieldButton", baseStyles, props)}
+    >
+      <span>{enabled ? "-" : "+"}</span>
+      <span
+        style={{
+          marginRight: 8,
+        }}
+      >
+        {prop.label || prop.name}
+      </span>
       {/* <p style={{ fontSize: "0.6875rem", fontWeight: 400 }}>
         {prop.description}
       </p> */}

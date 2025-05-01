@@ -1,5 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
 import type { GetAppsOpts } from "@pipedream/sdk";
+import { useQuery } from "@tanstack/react-query";
+
 import { useFrontendClient } from "./frontend-client-context";
 
 /**
@@ -8,10 +9,7 @@ import { useFrontendClient } from "./frontend-client-context";
 export const useApps = (input?: GetAppsOpts) => {
   const client = useFrontendClient();
   const query = useQuery({
-    queryKey: [
-      "apps",
-      input,
-    ],
+    queryKey: ["apps", input],
     queryFn: () => client.apps(input),
   });
 

@@ -1,5 +1,6 @@
-import { useCustomize } from "../hooks/customization-context";
 import type { CSSProperties } from "react";
+
+import { useCustomize } from "../hooks/customization-context";
 
 export type ButtonProps = {
   onChange: () => void;
@@ -7,9 +8,7 @@ export type ButtonProps = {
 
 export const LoadMoreButton = (props: ButtonProps) => {
   const { onChange } = props;
-  const {
-    getProps, theme,
-  } = useCustomize();
+  const { getProps, theme } = useCustomize();
 
   const baseStyles: CSSProperties = {
     backgroundColor: theme.colors.primary,
@@ -26,7 +25,11 @@ export const LoadMoreButton = (props: ButtonProps) => {
   };
 
   return (
-    <button onClick={onChange} type="button" {...getProps("loadMoreButton", baseStyles, props)}>
+    <button
+      onClick={onChange}
+      type="button"
+      {...getProps("loadMoreButton", baseStyles, props)}
+    >
       Load More
     </button>
   );

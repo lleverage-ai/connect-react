@@ -1,15 +1,24 @@
-import {
-  DynamicProps,
-  FormContextProvider, type FormContext,
-} from "../hooks/form-context";
 import type {
   ConfigurableProps,
   ConfiguredProps,
   V1Component,
 } from "@pipedream/sdk";
-import { InternalComponentForm } from "./InternalComponentForm";
 
-export type ComponentFormProps<T extends ConfigurableProps, U = ConfiguredProps<T>> = {
+import {
+  DynamicProps,
+  type FormContext,
+  FormContextProvider,
+} from "../hooks/form-context";
+
+import {
+  InternalComponentForm,
+  type InternalComponentFormProps,
+} from "./InternalComponentForm";
+
+export type ComponentFormProps<
+  T extends ConfigurableProps,
+  U = ConfiguredProps<T>,
+> = {
   userId: string;
   component: V1Component<T>;
   configuredProps?: U; // XXX value?
@@ -22,12 +31,21 @@ export type ComponentFormProps<T extends ConfigurableProps, U = ConfiguredProps<
   hideOptionalProps?: boolean;
   sdkResponse?: unknown | undefined;
   enableDebugging?: boolean;
+  renderLoading?: InternalComponentFormProps["renderLoading"];
+  renderError?: InternalComponentFormProps["renderError"];
 };
 
-export function ComponentForm<T extends ConfigurableProps>(props: ComponentFormProps<T>) {
+export function ComponentForm<T extends ConfigurableProps>(
+  props: ComponentFormProps<T>,
+) {
+  const { renderLoading, renderError, ...restProps } = props;
+
   return (
-    <FormContextProvider props={props}>
-      <InternalComponentForm />
+    <FormContextProvider props={restProps}>
+      <InternalComponentForm
+        renderLoading={renderLoading}
+        renderError={renderError}
+      />
     </FormContextProvider>
   );
 }

@@ -1,27 +1,26 @@
-import {
-  Suspense, useEffect, useState,
-} from "react";
-import type {
-  CSSProperties, FormEventHandler,
-} from "react";
+import type { ConfigurableProp, ConfigurablePropAlert } from "@pipedream/sdk";
+import { Suspense, useEffect, useState } from "react";
+import type { CSSProperties, FormEventHandler } from "react";
+
 import { useCustomize } from "../hooks/customization-context";
-import {
-  useFormContext,
-  skippablePropTypes,
-} from "../hooks/form-context";
-import { InternalField } from "./InternalField";
+import { skippablePropTypes, useFormContext } from "../hooks/form-context";
+
 import { Alert } from "./Alert";
-import { ErrorBoundary } from "./ErrorBoundary";
 import { ControlSubmit } from "./ControlSubmit";
-import type {
-  ConfigurableProp, ConfigurablePropAlert,
-} from "@pipedream/sdk";
+import { ErrorBoundary } from "./ErrorBoundary";
+import { InternalField } from "./InternalField";
 
-const alwaysShowSdkErrors = [
-  "ConfigurationError",
-]
+const alwaysShowSdkErrors = ["ConfigurationError"];
 
-export function InternalComponentForm() {
+export type InternalComponentFormProps = {
+  renderLoading?: () => React.ReactNode;
+  renderError?: (error: Error) => React.ReactNode;
+};
+
+export function InternalComponentForm({
+  renderLoading,
+  renderError,
+}: InternalComponentFormProps = {}) {
   const formContext = useFormContext();
   const {
     configurableProps,
@@ -36,43 +35,36 @@ export function InternalComponentForm() {
     enableDebugging,
   } = formContext;
 
-  const showSdkErrors = enableDebugging || __sdkErrors.filter((e) => alwaysShowSdkErrors.includes(e.name)).length > 0
+  const showSdkErrors =
+    enableDebugging ||
+    __sdkErrors.filter((e) => alwaysShowSdkErrors.includes(e.name)).length > 0;
 
-  const {
-    hideOptionalProps, onSubmit,
-  } = formContextProps;
+  const { hideOptionalProps, onSubmit } = formContextProps;
 
-  const [
-    sdkErrors,
-    setSdkErrors,
-  ] = useState<ConfigurablePropAlert[]>([])
+  const [sdkErrors, setSdkErrors] = useState<ConfigurablePropAlert[]>([]);
 
   useEffect(() => {
-    if (submitting) setSdkErrors([])
+    if (submitting) setSdkErrors([]);
     else {
       if (__sdkErrors && __sdkErrors.length) {
-        setSdkErrors(__sdkErrors.map((e) => {
-          return {
-            type: "alert",
-            alertType: "error",
-            content: `# ${e.name}\n${e.message}`,
-          } as ConfigurablePropAlert
-        }))
+        setSdkErrors(
+          __sdkErrors.map((e) => {
+            return {
+              type: "alert",
+              alertType: "error",
+              content: `# ${e.name}\n${e.message}`,
+            } as ConfigurablePropAlert;
+          }),
+        );
       }
     }
-  }, [
-    __sdkErrors,
-    submitting,
-  ]);
+  }, [__sdkErrors, submitting]);
 
-  const {
-    getComponents, getProps, theme,
-  } = useCustomize();
+  const { getComponents, getProps, theme } = useCustomize();
   const { OptionalFieldButton } = getComponents();
   const baseStyles: CSSProperties = {
     display: "flex",
     flexDirection: "column",
-    gap: "1.5rem",
   };
 
   const baseOptionalFieldsStyles: CSSProperties = {
@@ -117,57 +109,77 @@ export function InternalComponentForm() {
     }
     if (prop.optional) {
       const enabled = optionalPropIsEnabled(prop);
-      optionalProps.push([
-        prop,
-        enabled,
-      ]);
+      optionalProps.push([prop, enabled]);
       if (!enabled) {
         continue;
       }
     }
-    shownProps.push([
-      prop,
-      idx,
-    ]);
+    shownProps.push([prop, idx]);
   }
 
-  // TODO improve the error boundary thing (use default Alert component maybe)
+  const defaultErrorUI = (err: any) => (
+    <p
+      style={{
+        color: "red",
+      }}
+    >
+      Error:{" "}
+      {err &&
+      typeof err === "object" &&
+      "message" in err &&
+      typeof err.message === "string"
+        ? err.message
+        : "Unknown"}
+    </p>
+  );
 
   return (
-    <ErrorBoundary fallback={(err) => <p style={{
-      color: "red",
-    }}>Error: {err && typeof err === "object" && "message" in err && typeof err.message === "string"
-        ? err.message
-        : "Unknown"}</p>}>
-      <Suspense fallback={<p>Loading form...</p>}>
-        <form {...getProps("componentForm", baseStyles, formContextProps)} onSubmit={_onSubmit}>
-          {shownProps.map(([
-            prop,
-            idx,
-          ]) => {
+    <ErrorBoundary
+      fallback={(err) => (renderError ? renderError(err) : defaultErrorUI(err))}
+    >
+      <Suspense
+        fallback={renderLoading ? renderLoading() : <p>Loading form...</p>}
+      >
+        <form
+          {...getProps("componentForm", baseStyles, formContextProps)}
+          onSubmit={_onSubmit}
+          className="gap-2"
+        >
+          {shownProps.map(([prop, idx]) => {
             if (prop.type === "alert") {
               return <Alert key={prop.name} prop={prop} />;
             }
             return <InternalField key={prop.name} prop={prop} idx={idx} />;
           })}
-          {dynamicPropsQueryIsFetching && <p>Loading dynamic props...</p>}
-          {(!hideOptionalProps && optionalProps.length)
-            ? <div>
-              <div {...getProps("heading", baseHeadingStyles, formContextProps)}>Optional Props</div>
-              <div {...getProps("optionalFields", baseOptionalFieldsStyles, formContextProps)}>
-                {optionalProps.map(([
-                  prop,
-                  enabled,
-                ]) => <OptionalFieldButton
-                  key={prop.name}
-                  prop={prop}
-                  enabled={enabled}
-                  onClick={() => optionalPropSetEnabled(prop, !enabled)}
-                />)}
+          {dynamicPropsQueryIsFetching &&
+            (renderLoading ? renderLoading() : <p>Loading dynamic props...</p>)}
+          {!hideOptionalProps && optionalProps.length ? (
+            <div>
+              <div
+                {...getProps("heading", baseHeadingStyles, formContextProps)}
+              >
+                Optional Props
+              </div>
+              <div
+                {...getProps(
+                  "optionalFields",
+                  baseOptionalFieldsStyles,
+                  formContextProps,
+                )}
+              >
+                {optionalProps.map(([prop, enabled]) => (
+                  <OptionalFieldButton
+                    key={prop.name}
+                    prop={prop}
+                    enabled={enabled}
+                    onClick={() => optionalPropSetEnabled(prop, !enabled)}
+                  />
+                ))}
               </div>
             </div>
-            : null}
-          { showSdkErrors && sdkErrors?.map((e, idx) => <Alert prop={e} key={idx}/>)}
+          ) : null}
+          {showSdkErrors &&
+            sdkErrors?.map((e, idx) => <Alert prop={e} key={idx} />)}
           {onSubmit && <ControlSubmit form={formContext} />}
         </form>
       </Suspense>
