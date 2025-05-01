@@ -79,10 +79,13 @@ export declare type Colors = {
 
 export declare function ComponentForm<T extends ConfigurableProps>(props: ComponentFormProps<T>): JSX_2.Element;
 
-export declare function ComponentFormContainer<T extends ConfigurableProps>(props: ComponentFormContainerProps<T>): JSX_2.Element;
+export declare function ComponentFormContainer<T extends ConfigurableProps>(props: ComponentFormContainerProps<T>): string | number | boolean | JSX_2.Element | Iterable<ReactNode> | null | undefined;
 
 declare type ComponentFormContainerProps<T extends ConfigurableProps> = Omit<ComponentFormProps<T>, "component"> & {
     componentKey: string;
+    renderLoading?: () => React.ReactNode;
+    renderError?: (error: Error) => React.ReactNode;
+    renderNotFound?: () => React.ReactNode;
 };
 
 declare type ComponentFormProps<T extends ConfigurableProps, U = ConfiguredProps<T>> = {
@@ -97,6 +100,8 @@ declare type ComponentFormProps<T extends ConfigurableProps, U = ConfiguredProps
     hideOptionalProps?: boolean;
     sdkResponse?: unknown | undefined;
     enableDebugging?: boolean;
+    renderLoading?: InternalComponentFormProps["renderLoading"];
+    renderError?: InternalComponentFormProps["renderError"];
 };
 
 export declare type ComponentLibrary = typeof defaultComponents;
@@ -145,10 +150,10 @@ export declare type CustomClassNamesConfig = {
     [K in keyof ReactSelectComponents]?: ClassNamesConfig;
 };
 
-export declare type CustomClassNamesFn<K extends keyof CustomizableProps> = ((opts: CustomizationOpts<CustomizableProps[K]>) => string);
+export declare type CustomClassNamesFn<K extends keyof CustomizableProps> = (opts: CustomizationOpts<CustomizableProps[K]>) => string;
 
 export declare type CustomComponents<Option, IsMulti extends boolean, Group extends GroupBase<Option>> = {
-    [K in keyof typeof defaultComponents]: typeof defaultComponents[K];
+    [K in keyof typeof defaultComponents]: (typeof defaultComponents)[K];
 } & {
     [K in keyof ReactSelectComponents]: SelectComponentsConfig<Option, IsMulti, Group>;
 };
@@ -220,11 +225,14 @@ export declare type CustomStylesConfig = {
     [K in keyof ReactSelectComponents]?: StylesConfig;
 };
 
-export declare type CustomStylesFn<K extends keyof CustomizableProps> = ((baseStyles: CSSProperties, opts: CustomizationOpts<CustomizableProps[K]>) => CSSProperties);
+export declare type CustomStylesFn<K extends keyof CustomizableProps> = (baseStyles: CSSProperties, opts: CustomizationOpts<CustomizableProps[K]>) => CSSProperties;
 
 export declare type CustomThemeConfig = PartialTheme | ((theme: Theme) => PartialTheme);
 
 export declare const defaultComponents: {
+    ControlInput: typeof ControlInput;
+    ControlSelect: typeof ControlSelect;
+    ControlApp: typeof ControlApp;
     Description: typeof Description;
     Errors: typeof Errors;
     Label: typeof Label;
@@ -336,7 +344,12 @@ declare type FrontendClientProviderProps = {
 
 export declare function getReactSelectTheme(theme: CustomThemeConfig | undefined): Theme_2;
 
-export declare function InternalComponentForm(): JSX_2.Element;
+export declare function InternalComponentForm({ renderLoading, renderError, }?: InternalComponentFormProps): JSX_2.Element;
+
+declare type InternalComponentFormProps = {
+    renderLoading?: () => React.ReactNode;
+    renderError?: (error: Error) => React.ReactNode;
+};
 
 export declare function InternalField<T extends ConfigurableProp>({ prop, idx, }: FieldInternalProps<T>): JSX_2.Element;
 
@@ -377,7 +390,7 @@ export declare type ReactSelectComponents = {
     controlSelect: typeof ControlSelect;
 };
 
-export declare function RemoteOptionsContainer({ queryEnabled }: RemoteOptionsContainerProps): JSX_2.Element;
+export declare function RemoteOptionsContainer({ queryEnabled, }: RemoteOptionsContainerProps): JSX_2.Element;
 
 declare type RemoteOptionsContainerProps = {
     queryEnabled?: boolean;
@@ -388,7 +401,7 @@ declare type SdkError = {
     message: string;
 };
 
-export declare function SelectApp({ value, onChange, }: SelectAppProps): JSX_2.Element;
+export declare function SelectApp({ value, onChange }: SelectAppProps): JSX_2.Element;
 
 declare type SelectAppProps = {
     value?: Partial<AppResponse> & {
