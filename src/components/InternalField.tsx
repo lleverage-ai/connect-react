@@ -1,9 +1,11 @@
 import type { ConfigurableProp } from "@pipedream/sdk";
-import { FormFieldContext } from "../hooks/form-field-context";
-import { useFormContext } from "../hooks/form-context";
-import { Field } from "./Field";
-import { useApp } from "../hooks/use-app";
 import { useEffect } from "react";
+
+import { useFormContext } from "../hooks/form-context";
+import { FormFieldContext } from "../hooks/form-field-context";
+import { useApp } from "../hooks/use-app";
+
+import { Field } from "./Field";
 
 type FieldInternalProps<T extends ConfigurableProp> = {
   prop: T;
@@ -11,16 +13,20 @@ type FieldInternalProps<T extends ConfigurableProp> = {
 };
 
 export function InternalField<T extends ConfigurableProp>({
-  prop, idx,
+  prop,
+  idx,
 }: FieldInternalProps<T>) {
   const formCtx = useFormContext();
   const {
-    id: formId, configuredProps, registerField, setConfiguredProp, errors, enableDebugging,
+    id: formId,
+    configuredProps,
+    registerField,
+    setConfiguredProp,
+    errors,
+    enableDebugging,
   } = formCtx;
 
-  const appSlug = prop.type === "app" && "app" in prop
-    ? prop.app
-    : undefined;
+  const appSlug = prop.type === "app" && "app" in prop ? prop.app : undefined;
   const {
     // TODO error
     app,
@@ -47,9 +53,7 @@ export function InternalField<T extends ConfigurableProp>({
     errors,
     enableDebugging,
   };
-  useEffect(() => registerField(fieldCtx), [
-    fieldCtx,
-  ])
+  useEffect(() => registerField(fieldCtx), [fieldCtx]);
   return (
     <FormFieldContext.Provider value={fieldCtx}>
       <Field field={fieldCtx} form={formCtx} />

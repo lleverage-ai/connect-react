@@ -1,5 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
 import type { GetComponentOpts } from "@pipedream/sdk";
+import { useQuery } from "@tanstack/react-query";
+
 import { useFrontendClient } from "./frontend-client-context";
 
 /**
@@ -8,10 +9,7 @@ import { useFrontendClient } from "./frontend-client-context";
 export const useComponents = (input?: GetComponentOpts) => {
   const client = useFrontendClient();
   const query = useQuery({
-    queryKey: [
-      "components",
-      input,
-    ],
+    queryKey: ["components", input],
     queryFn: () => client.components(input),
   });
 

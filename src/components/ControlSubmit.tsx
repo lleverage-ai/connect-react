@@ -1,6 +1,7 @@
-import { FormContext } from "../hooks/form-context";
-import { useCustomize } from "../hooks/customization-context";
 import type { CSSProperties } from "react";
+
+import { useCustomize } from "../hooks/customization-context";
+import { FormContext } from "../hooks/form-context";
 
 export type ControlSubmitProps = {
   form: FormContext;
@@ -8,22 +9,14 @@ export type ControlSubmitProps = {
 
 export function ControlSubmit(props: ControlSubmitProps) {
   const { form } = props;
-  const {
-    propsNeedConfiguring, submitting,
-  } = form;
+  const { propsNeedConfiguring, submitting } = form;
 
-  const {
-    getProps, theme,
-  } = useCustomize();
+  const { getProps, theme } = useCustomize();
   const baseStyles = (disabled: boolean): CSSProperties => ({
     width: "fit-content",
     textTransform: "capitalize",
-    backgroundColor: disabled
-      ? theme.colors.neutral10
-      : theme.colors.primary,
-    color: disabled
-      ? theme.colors.neutral40
-      : theme.colors.neutral0,
+    backgroundColor: disabled ? theme.colors.neutral10 : theme.colors.primary,
+    color: disabled ? theme.colors.neutral40 : theme.colors.neutral0,
     padding: `${theme.spacing.baseUnit * 1.75}px ${
       theme.spacing.baseUnit * 16
     }px`,
@@ -31,13 +24,20 @@ export function ControlSubmit(props: ControlSubmitProps) {
     boxShadow: theme.boxShadow?.button,
     cursor: "pointer",
     fontSize: "0.875rem",
-    opacity: submitting
-      ? 0.5
-      : undefined,
+    opacity: submitting ? 0.5 : undefined,
     margin: "0.5rem 0 0 0",
   });
 
-  return <input type="submit" value={submitting
-    ? "Submitting..."
-    : "Submit"} {...getProps("controlSubmit", baseStyles(propsNeedConfiguring.length || submitting), props)} disabled={propsNeedConfiguring.length || submitting} />;
+  return (
+    <input
+      type="submit"
+      value={submitting ? "Submitting..." : "Submit"}
+      {...getProps(
+        "controlSubmit",
+        baseStyles(propsNeedConfiguring.length || submitting),
+        props,
+      )}
+      disabled={propsNeedConfiguring.length || submitting}
+    />
+  );
 }

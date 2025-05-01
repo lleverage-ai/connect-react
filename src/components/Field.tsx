@@ -1,9 +1,11 @@
+import { ConfigurableProp } from "@pipedream/sdk";
+import type { CSSProperties } from "react";
+
+import { useCustomize } from "../hooks/customization-context";
 import { FormContext } from "../hooks/form-context";
 import { FormFieldContext } from "../hooks/form-field-context";
-import { ConfigurableProp } from "@pipedream/sdk";
+
 import { Control } from "./Control";
-import { useCustomize } from "../hooks/customization-context";
-import type { CSSProperties } from "react";
 
 export type FieldProps<T extends ConfigurableProp> = {
   form: FormContext;
@@ -18,31 +20,23 @@ export type FieldProps<T extends ConfigurableProp> = {
 //   return <Field {...props}> // otherwise fallback on default
 // }
 export function Field<T extends ConfigurableProp>(props: FieldProps<T>) {
-  const {
-    form, field,
-  } = props;
+  const { form, field } = props;
   const { prop } = field;
-  const {
-    getProps, getComponents,
-  } = useCustomize();
+  const { getProps, getComponents } = useCustomize();
   const baseStyles: CSSProperties = {
     display: "grid",
     gridTemplateAreas:
       field.prop.type == "boolean"
-        ? "\"control label\" \"description description\" \"error error\""
-        : "\"label label\" \"control control\" \"description description\" \"error error\"",
+        ? '"control label" "description description" "error error"'
+        : '"label label" "control control" "description description" "error error"',
     gridTemplateColumns: "min-content auto",
     gap: "0.25rem 0",
     alignItems: "center",
     fontSize: "0.875rem",
   };
-  const {
-    Label, Description, Errors,
-  } = getComponents();
+  const { Label, Description, Errors } = getComponents();
 
-  const app = "app" in field.extra
-    ? field.extra.app
-    : undefined;
+  const app = "app" in field.extra ? field.extra.app : undefined;
   if (app && !app.auth_type) {
     return null;
   }

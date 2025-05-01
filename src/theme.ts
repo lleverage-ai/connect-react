@@ -1,6 +1,6 @@
 import {
-  defaultTheme as _reactSelectDefaultTheme,
   type Theme as ReactSelectTheme,
+  defaultTheme as _reactSelectDefaultTheme,
 } from "react-select";
 
 const reactSelectDefaultTheme = _reactSelectDefaultTheme as Theme;
@@ -149,12 +149,8 @@ export function getReactSelectTheme(
   theme: CustomThemeConfig | undefined,
 ): ReactSelectTheme {
   if (!theme) return _reactSelectDefaultTheme;
-  const _theme = typeof theme == "function"
-    ? theme(defaultTheme)
-    : theme;
-  const {
-    colors, spacing, borderRadius,
-  } = mergeTheme(
+  const _theme = typeof theme == "function" ? theme(defaultTheme) : theme;
+  const { colors, spacing, borderRadius } = mergeTheme(
     reactSelectDefaultTheme,
     _theme,
   );

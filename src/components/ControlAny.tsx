@@ -1,15 +1,12 @@
-import { useFormFieldContext } from "../hooks/form-field-context";
-import { useCustomize } from "../hooks/customization-context";
 import type { CSSProperties } from "react";
+
+import { useCustomize } from "../hooks/customization-context";
+import { useFormFieldContext } from "../hooks/form-field-context";
 
 export function ControlAny() {
   const formFieldContext = useFormFieldContext();
-  const {
-    id, onChange, value,
-  } = formFieldContext;
-  const {
-    getProps, theme,
-  } = useCustomize();
+  const { id, onChange, value } = formFieldContext;
+  const { getProps, theme } = useCustomize();
   const baseStyles: CSSProperties = {
     display: "block",
     gridArea: "control",

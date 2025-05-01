@@ -1,13 +1,17 @@
-import {
-  createContext, useContext,
-} from "react";
 import type {
-  AppResponse, ConfigurableProp, ConfigurablePropApp, PropValue,
+  AppResponse,
+  ConfigurableProp,
+  ConfigurablePropApp,
+  PropValue,
 } from "@pipedream/sdk";
+import { createContext, useContext } from "react";
 
-export type FormFieldContextExtra<T extends ConfigurableProp> = T extends ConfigurablePropApp ? {
-  app?: AppResponse;
-} : Record<string, never>;
+export type FormFieldContextExtra<T extends ConfigurableProp> =
+  T extends ConfigurablePropApp
+    ? {
+        app?: AppResponse;
+      }
+    : Record<string, never>;
 
 export type FormFieldContext<T extends ConfigurableProp> = {
   id: string;
@@ -20,7 +24,9 @@ export type FormFieldContext<T extends ConfigurableProp> = {
   enableDebugging?: boolean;
 };
 
-export const FormFieldContext = createContext<FormFieldContext<any /* XXX fix */> | undefined>(undefined); // eslint-disable-line @typescript-eslint/no-explicit-any
+export const FormFieldContext = createContext<
+  FormFieldContext<any /* XXX fix */> | undefined
+>(undefined); // eslint-disable-line @typescript-eslint/no-explicit-any
 
 export const useFormFieldContext = <T extends ConfigurableProp>() => {
   const context = useContext(FormFieldContext);

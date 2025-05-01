@@ -1,14 +1,13 @@
+import { AppResponse, V1Component } from "@pipedream/sdk";
 import { useId } from "react";
 import Select from "react-select";
+
 import { useComponents } from "../hooks/use-components";
-import {
-  AppResponse, V1Component,
-} from "@pipedream/sdk";
 
 type SelectComponentProps = {
-  app?: Partial<AppResponse> & { name_slug: string; };
+  app?: Partial<AppResponse> & { name_slug: string };
   componentType?: "action" | "trigger";
-  value?: Partial<V1Component> & { key: string; };
+  value?: Partial<V1Component> & { key: string };
   onChange?: (component?: V1Component) => void;
 };
 
@@ -19,9 +18,7 @@ export function SelectComponent({
   onChange,
 }: SelectComponentProps) {
   const instanceId = useId();
-  const {
-    isLoading, components,
-  } = useComponents({
+  const { isLoading, components } = useComponents({
     app: app?.name_slug,
     componentType,
   });
