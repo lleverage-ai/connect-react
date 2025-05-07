@@ -1,6 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
-import Select, { Props as ReactSelectProps, components } from "react-select";
-import type { CSSObjectWithLabel } from "react-select";
+import { memo, useEffect, useMemo, useState } from "react";
+import Select, {
+  Props as ReactSelectProps,
+  components,
+  MenuListProps,
+} from "react-select";
+import type { CSSObjectWithLabel, GroupBase } from "react-select";
 import CreatableSelect from "react-select/creatable";
 
 import { useCustomize } from "../hooks/customization-context";
@@ -18,7 +22,7 @@ type ControlSelectProps<T> = {
   onLoadMore?: () => void;
 };
 
-export function ControlSelect<T>({
+function ControlSelectInternal<T>({
   isCreatable,
   options,
   selectProps,
@@ -39,9 +43,9 @@ export function ControlSelect<T>({
     setRawValue(value);
   }, [value]);
 
-  const baseSelectProps: BaseReactSelectProps<never, never, never> = {
+  const baseSelectProps: BaseReactSelectProps<any, any, any> = {
     styles: {
-      container: (base): CSSObjectWithLabel => ({
+      container: (base: CSSObjectWithLabel): CSSObjectWithLabel => ({
         ...base,
         gridArea: "control",
         boxShadow: theme.boxShadow.input,
@@ -94,27 +98,29 @@ export function ControlSelect<T>({
     return ret;
   }, [rawValue, selectOptions]);
 
-  const LoadMore = ({
-    // eslint-disable-next-line react/prop-types
-    children,
-    ...props
-  }) => {
-    return (
-      <components.MenuList {...props}>
-        {children}
-        <div className="pt-4">
-          <LoadMoreButton onChange={onLoadMore} />
-        </div>
-      </components.MenuList>
-    );
-  };
+  const CustomLoadMore = useMemo(() => {
+    // Create a properly typed MenuList component
+    return function CustomMenuList<
+      Option,
+      IsMulti extends boolean,
+      Group extends GroupBase<Option>
+    >(menuListProps: MenuListProps<Option, IsMulti, Group>) {
+      return (
+        <components.MenuList {...menuListProps}>
+          {menuListProps.children}
+          <div className="pt-4">
+            {onLoadMore && <LoadMoreButton onChange={onLoadMore} />}
+          </div>
+        </components.MenuList>
+      );
+    };
+  }, [onLoadMore]);
 
   const props = select.getProps("controlSelect", baseSelectProps);
   if (showLoadMoreButton) {
     props.components = {
-      // eslint-disable-next-line react/prop-types
       ...props.components,
-      MenuList: LoadMore,
+      MenuList: CustomLoadMore,
     };
   }
 
@@ -128,10 +134,11 @@ export function ControlSelect<T>({
     };
     const newOption = createOption(inputValue);
     let newRawValue = newOption;
-    const newSelectOptions = selectOptions
-      ? [newOption, ...selectOptions]
-      : [newOption];
-    setSelectOptions(newSelectOptions);
+    // Type-safe version of setSelectOptions
+    setSelectOptions((prevOptions) => {
+      return newOption ? [newOption as any, ...prevOptions] : [...prevOptions];
+    });
+
     if (prop.type.endsWith("[]")) {
       if (Array.isArray(rawValue)) {
         newRawValue = [...rawValue.map(createOption), newOption];
@@ -186,3 +193,8 @@ export function ControlSelect<T>({
     />
   );
 }
+
+// Export the memoized version
+export const ControlSelect = memo(
+  ControlSelectInternal
+) as typeof ControlSelectInternal;

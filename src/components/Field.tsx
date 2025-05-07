@@ -1,4 +1,5 @@
-import { ConfigurableProp } from "@pipedream/sdk";
+import { ConfigurableProp, ConfigurableProps } from "@pipedream/sdk";
+import { memo } from "react";
 import type { CSSProperties } from "react";
 
 import { useCustomize } from "../hooks/customization-context";
@@ -8,7 +9,7 @@ import { FormFieldContext } from "../hooks/form-field-context";
 import { Control } from "./Control";
 
 export type FieldProps<T extends ConfigurableProp> = {
-  form: FormContext;
+  form: FormContext<ConfigurableProps>;
   field: FormFieldContext<T>;
 };
 
@@ -19,7 +20,7 @@ export type FieldProps<T extends ConfigurableProp> = {
 //   }
 //   return <Field {...props}> // otherwise fallback on default
 // }
-export function Field<T extends ConfigurableProp>(props: FieldProps<T>) {
+function FieldComponent<T extends ConfigurableProp>(props: FieldProps<T>) {
   const { form, field } = props;
   const { prop } = field;
   const { getProps, getComponents } = useCustomize();
@@ -61,3 +62,6 @@ export function Field<T extends ConfigurableProp>(props: FieldProps<T>) {
     </div>
   );
 }
+
+// Export with memoization to prevent unnecessary re-renders
+export const Field = memo(FieldComponent) as typeof FieldComponent;

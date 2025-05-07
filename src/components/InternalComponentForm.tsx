@@ -1,5 +1,5 @@
 import type { ConfigurableProp, ConfigurablePropAlert } from "@pipedream/sdk";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState, memo } from "react";
 import type { CSSProperties, FormEventHandler } from "react";
 
 import { useCustomize } from "../hooks/customization-context";
@@ -17,7 +17,8 @@ export type InternalComponentFormProps = {
   renderError?: (error: Error) => React.ReactNode;
 };
 
-export function InternalComponentForm({
+// Component implementation with memoization
+function InternalComponentFormBase({
   renderLoading,
   renderError,
 }: InternalComponentFormProps = {}) {
@@ -54,7 +55,7 @@ export function InternalComponentForm({
               alertType: "error",
               content: `# ${e.name}\n${e.message}`,
             } as ConfigurablePropAlert;
-          }),
+          })
         );
       }
     }
@@ -164,7 +165,7 @@ export function InternalComponentForm({
                 {...getProps(
                   "optionalFields",
                   baseOptionalFieldsStyles,
-                  formContextProps,
+                  formContextProps
                 )}
               >
                 {optionalProps.map(([prop, enabled]) => (
@@ -186,3 +187,6 @@ export function InternalComponentForm({
     </ErrorBoundary>
   );
 }
+
+// Export the memoized version
+export const InternalComponentForm = memo(InternalComponentFormBase);

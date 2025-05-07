@@ -1,9 +1,11 @@
 import type { CSSProperties } from "react";
+import { memo } from "react";
 
 import { useCustomize } from "../hooks/customization-context";
 import { useFormFieldContext } from "../hooks/form-field-context";
 
-export function ControlInput() {
+// Wrap the component with React.memo to prevent unnecessary re-renders
+const ControlInputComponent = () => {
   const formFieldContextProps = useFormFieldContext();
 
   const { id, onChange, prop, value } = formFieldContextProps;
@@ -58,4 +60,7 @@ export function ControlInput() {
       required={!prop.optional}
     />
   );
-}
+};
+
+// Export the memoized version
+export const ControlInput = memo(ControlInputComponent);

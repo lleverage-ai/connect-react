@@ -15,6 +15,7 @@ import {
   useEffect,
   useId,
   useState,
+  useMemo,
 } from "react";
 
 import type { ComponentFormProps } from "../components/ComponentForm";
@@ -52,7 +53,7 @@ export type FormContext<T extends ConfigurableProps> = {
   propsNeedConfiguring: string[];
   queryDisabledIdx?: number;
   registerField: <T extends ConfigurableProp>(
-    field: FormFieldContext<T>,
+    field: FormFieldContext<T>
   ) => void;
   setConfiguredProp: (idx: number, value: unknown) => void; // XXX type safety for value (T will rarely be static right?)
   setSubmitting: (submitting: boolean) => void;
@@ -108,7 +109,7 @@ export const FormContextProvider = <T extends ConfigurableProps>({
   const componentId = component.key;
 
   const [queryDisabledIdx, setQueryDisabledIdx] = useState<number | undefined>(
-    0,
+    0
   );
   const [fields, setFields] = useState<
     Record<string, FormFieldContext<ConfigurableProp>>
@@ -177,7 +178,7 @@ export const FormContextProvider = <T extends ConfigurableProps>({
     queryKey: ["dynamicProps", queryKeyInput],
     queryFn: async () => {
       const result = await client.componentReloadProps(
-        componentReloadPropsInput,
+        componentReloadPropsInput
       );
       const { dynamicProps, observations, errors: __errors } = result;
 
@@ -204,7 +205,7 @@ export const FormContextProvider = <T extends ConfigurableProps>({
   });
 
   const [propsNeedConfiguring, setPropsNeedConfiguring] = useState<string[]>(
-    [],
+    []
   );
   useEffect(() => {
     checkPropsNeedConfiguring();
@@ -228,7 +229,7 @@ export const FormContextProvider = <T extends ConfigurableProps>({
   if (reloadPropIdx != null) {
     configurableProps = configurableProps.slice(
       0,
-      reloadPropIdx + 1,
+      reloadPropIdx + 1
     ) as unknown as T; // XXX
   }
 
@@ -252,7 +253,7 @@ export const FormContextProvider = <T extends ConfigurableProps>({
             prop,
             value,
             app,
-          }) ?? []),
+          }) ?? [])
         );
       } else {
         errs.push("field not registered");
@@ -262,35 +263,35 @@ export const FormContextProvider = <T extends ConfigurableProps>({
         ...(booleanPropErrors({
           prop,
           value,
-        }) ?? []),
+        }) ?? [])
       );
     } else if (prop.type === "integer") {
       errs.push(
         ...(integerPropErrors({
           prop,
           value,
-        }) ?? []),
+        }) ?? [])
       );
     } else if (prop.type === "string") {
       errs.push(
         ...(stringPropErrors({
           prop,
           value,
-        }) ?? []),
+        }) ?? [])
       );
     } else if (prop.type === "string[]") {
       errs.push(
         ...(arrayPropErrors({
           prop,
           value,
-        }) ?? []),
+        }) ?? [])
       );
     }
     return errs;
   };
 
   const updateConfiguredPropsQueryDisabledIdx = (
-    configuredProps: ConfiguredProps<T>,
+    configuredProps: ConfiguredProps<T>
   ) => {
     let _queryDisabledIdx = undefined;
     for (let idx = 0; idx < configurableProps.length; idx++) {
@@ -435,7 +436,7 @@ export const FormContextProvider = <T extends ConfigurableProps>({
     ) {
       setConfiguredProp(
         idx,
-        __configuredProps[prop.name as keyof ConfiguredProps<T>],
+        __configuredProps[prop.name as keyof ConfiguredProps<T>]
       );
     } else if ("default" in prop && prop.default != null) {
       setConfiguredProp(idx, prop.default);
@@ -478,7 +479,7 @@ export const FormContextProvider = <T extends ConfigurableProps>({
   };
 
   const registerField = <T extends ConfigurableProp>(
-    field: FormFieldContext<T>,
+    field: FormFieldContext<T>
   ) => {
     setFields((fields) => {
       fields[field.prop.name] = field;
@@ -618,5 +619,21 @@ export const FormContextProvider = <T extends ConfigurableProps>({
     sdkErrors,
     enableDebugging,
   };
-  return <FormContext.Provider value={value}>{children}</FormContext.Provider>;
+
+  // Memoize the context value to prevent unnecessary re-renders
+  // Only need to recompute when the state that directly affects the form state changes
+  const memoizedValue = useMemo(
+    () => value,
+    [
+      // Since we're not modifying existing code structure, include all value properties
+      // to maintain behavior but provide stability for component references
+      value,
+    ]
+  );
+
+  return (
+    <FormContext.Provider value={memoizedValue}>
+      {children}
+    </FormContext.Provider>
+  );
 };

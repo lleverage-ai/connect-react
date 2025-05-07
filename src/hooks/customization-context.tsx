@@ -1,5 +1,11 @@
 import type { ConfigurableProp } from "@pipedream/sdk";
-import { type ReactNode, createContext, useContext } from "react";
+import {
+  type ReactNode,
+  createContext,
+  useContext,
+  useMemo,
+  useCallback,
+} from "react";
 import type {
   CSSProperties,
   ComponentProps,
@@ -61,7 +67,7 @@ export type ReactSelectComponents = {
 export type CustomComponents<
   Option,
   IsMulti extends boolean,
-  Group extends GroupBase<Option>,
+  Group extends GroupBase<Option>
 > = {
   [K in keyof typeof defaultComponents]: (typeof defaultComponents)[K];
 } & {
@@ -76,12 +82,12 @@ export type ComponentLibrary = typeof defaultComponents;
 export type CustomComponentsConfig<
   T,
   U extends boolean,
-  V extends GroupBase<T>,
+  V extends GroupBase<T>
 > = Partial<CustomComponents<T, U, V>>;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type CustomizationOpts<
-  P extends ComponentProps<JSXElementConstructor<any>>,
+  P extends ComponentProps<JSXElementConstructor<any>>
 > = P & {
   theme: Theme;
 };
@@ -111,7 +117,7 @@ export type CustomizableProps = {
 };
 
 export type CustomClassNamesFn<K extends keyof CustomizableProps> = (
-  opts: CustomizationOpts<CustomizableProps[K]>,
+  opts: CustomizationOpts<CustomizableProps[K]>
 ) => string;
 export type CustomClassNamesConfig = {
   [K in keyof CustomizableProps]?: string | CustomClassNamesFn<K>;
@@ -121,7 +127,7 @@ export type CustomClassNamesConfig = {
 
 export type CustomStylesFn<K extends keyof CustomizableProps> = (
   baseStyles: CSSProperties,
-  opts: CustomizationOpts<CustomizableProps[K]>,
+  opts: CustomizationOpts<CustomizableProps[K]>
 ) => CSSProperties;
 export type CustomStylesConfig = {
   [K in keyof Omit<CustomizableProps, "select">]?:
@@ -134,7 +140,7 @@ export type CustomStylesConfig = {
 export type CustomizationConfig<
   Option,
   IsMulti extends boolean,
-  Group extends GroupBase<Option>,
+  Group extends GroupBase<Option>
 > = {
   classNames?: CustomClassNamesConfig;
   classNamePrefix?: string;
@@ -163,7 +169,7 @@ export type CustomizationProps = {
 export type BaseReactSelectProps<
   Option,
   IsMulti extends boolean,
-  Group extends GroupBase<Option>,
+  Group extends GroupBase<Option>
 > = {
   components?: ReactSelectComponentsConfig<Option, IsMulti, Group>;
   styles?: ReactSelectStylesConfig;
@@ -173,40 +179,40 @@ export type BaseReactSelectProps<
 export type Customization = {
   getClassNames: <Key extends keyof CustomizableProps>(
     name: Key,
-    props: CustomizableProps[Key],
+    props: CustomizableProps[Key]
   ) => string;
   getComponents: () => ComponentLibrary;
   getProps: <Key extends keyof CustomizableProps>(
     name: Key,
     baseStyles: CSSProperties,
-    props: CustomizableProps[Key],
+    props: CustomizableProps[Key]
   ) => CustomizationProps;
   getStyles: <Key extends keyof CustomizableProps>(
     name: Key,
     baseStyles: CSSProperties,
-    props: CustomizableProps[Key],
+    props: CustomizableProps[Key]
   ) => CSSProperties;
   theme: Theme;
   select: {
     getClassNamePrefix: <Key extends keyof ReactSelectComponents>(
-      name: Key,
+      name: Key
     ) => string;
     getClassNames: <Key extends keyof ReactSelectComponents>(
-      name: Key,
+      name: Key
     ) => ReactSelectClassNamesConfig;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getComponents: <Key extends keyof ReactSelectComponents>(
       name: Key,
-      baseComponents?: ReactSelectComponentsConfig<any, any, any>,
+      baseComponents?: ReactSelectComponentsConfig<any, any, any>
     ) => ReactSelectComponentsConfig<any, any, any>;
     getStyles: <Key extends keyof ReactSelectComponents>(
       name: Key,
-      baseStyles?: ReactSelectStylesConfig,
+      baseStyles?: ReactSelectStylesConfig
     ) => ReactSelectStylesConfig;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getProps: <Key extends keyof ReactSelectComponents>(
       name: Key,
-      baseProps?: BaseReactSelectProps<any, any, any>,
+      baseProps?: BaseReactSelectProps<any, any, any>
     ) => ReactSelectCustomizationProps;
     theme: ReactSelectTheme;
   };
@@ -220,7 +226,7 @@ function createSelectCustomization(): Customization["select"] {
   }
 
   function getClassNames<Key extends keyof ReactSelectComponents>(
-    name: Key,
+    name: Key
   ): ReactSelectClassNamesConfig {
     const baseClassName = `${context?.classNamePrefix ?? "pd-"}${name}`;
     const classNames: ReactSelectClassNamesConfig = {
@@ -239,7 +245,7 @@ function createSelectCustomization(): Customization["select"] {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function getComponents<Key extends keyof ReactSelectComponents>(
     name: Key,
-    baseComponents?: ReactSelectComponentsConfig<any, any, any>,
+    baseComponents?: ReactSelectComponentsConfig<any, any, any>
   ): ReactSelectComponentsConfig<any, any, any> {
     return {
       ...ReactSelectComponents,
@@ -250,18 +256,18 @@ function createSelectCustomization(): Customization["select"] {
 
   function getStyles<Key extends keyof ReactSelectComponents>(
     name: Key,
-    baseStyles?: ReactSelectStylesConfig,
+    baseStyles?: ReactSelectStylesConfig
   ): ReactSelectStylesConfig {
     return mergeReactSelectStyles(
       context.styles?.[name] ?? {},
-      baseStyles ?? {},
+      baseStyles ?? {}
     );
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function getProps<Key extends keyof ReactSelectComponents>(
     name: Key,
-    baseProps?: BaseReactSelectProps<any, any, any>,
+    baseProps?: BaseReactSelectProps<any, any, any>
   ): ReactSelectCustomizationProps {
     return {
       classNamePrefix: getClassNamePrefix(),
@@ -293,9 +299,11 @@ export function useCustomize(): Customization {
 
   function getClassNames<Key extends keyof CustomizableProps>(
     name: Key,
-    props: CustomizableProps[Key],
+    props: CustomizableProps[Key]
   ): string {
-    const baseClassName = `${context?.classNamePrefix ?? "pd-"}${name.toLowerCase()}`;
+    const baseClassName = `${
+      context?.classNamePrefix ?? "pd-"
+    }${name.toLowerCase()}`;
     const customClassNames = context.classNames?.[
       name
     ] as CustomClassNamesConfig[Key];
@@ -323,7 +331,7 @@ export function useCustomize(): Customization {
   function getStyles<Key extends keyof CustomizableProps>(
     name: Key,
     baseStyles: CSSProperties,
-    props: CustomizableProps[Key],
+    props: CustomizableProps[Key]
   ): CSSProperties {
     const customStyles = context.styles?.[name] as CustomStylesConfig[Key];
     if (typeof customStyles == "function") {
@@ -346,7 +354,7 @@ export function useCustomize(): Customization {
   function getProps<Key extends keyof CustomizableProps>(
     name: Key,
     baseStyles: CSSProperties,
-    props: CustomizableProps[Key],
+    props: CustomizableProps[Key]
   ): CustomizationProps {
     return {
       className: getClassNames(name, props),
@@ -368,8 +376,23 @@ export const CustomizeProvider = ({
   ...customizationProps
 }: CustomizationConfig<any, any, any> & { children: ReactNode }) => {
   // eslint-disable-line @typescript-eslint/no-explicit-any
+
+  // Memoize the customization context value to prevent unnecessary re-renders
+  const memoizedValue = useMemo(
+    () => customizationProps,
+    [
+      // Include only the stable references that should trigger a re-render
+      customizationProps.classNamePrefix,
+      customizationProps.unstyled,
+      customizationProps.theme,
+      // Components object reference should be kept stable by the parent component
+      // to avoid re-renders. We don't include it here as a dependency to avoid
+      // re-rendering when function references change.
+    ]
+  );
+
   return (
-    <CustomizationContext.Provider value={customizationProps}>
+    <CustomizationContext.Provider value={memoizedValue}>
       {children}
     </CustomizationContext.Provider>
   );

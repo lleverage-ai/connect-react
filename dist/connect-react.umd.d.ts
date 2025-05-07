@@ -29,6 +29,7 @@ import { GetComponentsResponse } from '@pipedream/sdk/browser';
 import { GroupBase } from 'react-select';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { JSXElementConstructor } from 'react';
+import { MemoExoticComponent } from 'react';
 import { OptionalFieldButtonProps as OptionalFieldButtonProps_2 } from '../components/OptionalFieldButton';
 import { Props } from 'react-select';
 import { PropValue } from '@pipedream/sdk';
@@ -118,14 +119,16 @@ declare type ControlAppProps = {
 
 export declare function ControlBoolean(): JSX_2.Element;
 
-export declare function ControlInput(): JSX_2.Element;
+export declare const ControlInput: MemoExoticComponent<() => JSX_2.Element>;
 
 declare type ControlProps<T extends ConfigurableProps, U extends ConfigurableProp> = {
     field: FormFieldContext<U>;
     form: FormContext<T>;
 };
 
-export declare function ControlSelect<T>({ isCreatable, options, selectProps, showLoadMoreButton, onLoadMore, }: ControlSelectProps<T>): JSX_2.Element;
+export declare const ControlSelect: typeof ControlSelectInternal;
+
+declare function ControlSelectInternal<T>({ isCreatable, options, selectProps, showLoadMoreButton, onLoadMore, }: ControlSelectProps<T>): JSX_2.Element;
 
 declare type ControlSelectProps<T> = {
     isCreatable?: boolean;
@@ -230,8 +233,17 @@ export declare type CustomStylesFn<K extends keyof CustomizableProps> = (baseSty
 export declare type CustomThemeConfig = PartialTheme | ((theme: Theme) => PartialTheme);
 
 export declare const defaultComponents: {
-    ControlInput: typeof ControlInput;
-    ControlSelect: typeof ControlSelect;
+    ControlInput: MemoExoticComponent<() => JSX_2.Element>;
+    ControlSelect: <T>({ isCreatable, options, selectProps, showLoadMoreButton, onLoadMore, }: {
+        isCreatable?: boolean;
+        options: {
+            label: string;
+            value: T;
+        }[];
+        selectProps?: Props;
+        showLoadMoreButton?: boolean;
+        onLoadMore?: () => void;
+    }) => JSX_2.Element;
     ControlApp: typeof ControlApp;
     Description: typeof Description;
     Errors: typeof Errors;
@@ -272,7 +284,9 @@ declare type ErrorsProps<T extends ConfigurableProps, U extends ConfigurableProp
     form: FormContext<T>;
 };
 
-export declare function Field<T extends ConfigurableProp>(props: FieldProps<T>): JSX_2.Element | null;
+export declare const Field: typeof FieldComponent;
+
+declare function FieldComponent<T extends ConfigurableProp>(props: FieldProps<T>): JSX_2.Element | null;
 
 declare type FieldInternalProps<T extends ConfigurableProp> = {
     prop: T;
@@ -280,7 +294,7 @@ declare type FieldInternalProps<T extends ConfigurableProp> = {
 };
 
 declare type FieldProps<T extends ConfigurableProp> = {
-    form: FormContext;
+    form: FormContext<ConfigurableProps>;
     field: FormFieldContext<T>;
 };
 
@@ -344,14 +358,18 @@ declare type FrontendClientProviderProps = {
 
 export declare function getReactSelectTheme(theme: CustomThemeConfig | undefined): Theme_2;
 
-export declare function InternalComponentForm({ renderLoading, renderError, }?: InternalComponentFormProps): JSX_2.Element;
+export declare const InternalComponentForm: MemoExoticComponent<typeof InternalComponentFormBase>;
+
+declare function InternalComponentFormBase({ renderLoading, renderError, }?: InternalComponentFormProps): JSX_2.Element;
 
 declare type InternalComponentFormProps = {
     renderLoading?: () => React.ReactNode;
     renderError?: (error: Error) => React.ReactNode;
 };
 
-export declare function InternalField<T extends ConfigurableProp>({ prop, idx, }: FieldInternalProps<T>): JSX_2.Element;
+export declare const InternalField: typeof InternalFieldComponent;
+
+declare function InternalFieldComponent<T extends ConfigurableProp>({ prop, idx, }: FieldInternalProps<T>): JSX_2.Element;
 
 export declare function Label<T extends ConfigurableProps, U extends ConfigurableProp>(props: LabelProps<T, U>): JSX_2.Element;
 
