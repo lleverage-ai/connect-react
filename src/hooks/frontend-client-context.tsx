@@ -9,12 +9,21 @@ import {
   useContext,
   useState,
 } from "react";
+import { SSRSafeWrapper } from "../components/SSRSafeWrapper";
+import { isSSR } from "../utils/isSSR";
 
 const FrontendClientContext = createContext<BrowserClient | undefined>(
-  undefined,
+  undefined
 );
 
 export const useFrontendClient = () => {
+  // Prevent context usage during SSR
+  if (isSSR()) {
+    throw new Error(
+      "useFrontendClient cannot be used during server-side rendering"
+    );
+  }
+
   const context = useContext(FrontendClientContext);
 
   if (!context) {
@@ -42,13 +51,16 @@ export const FrontendClientProvider: FC<FrontendClientProviderProps> = ({
             refetchOnWindowFocus: false,
           },
         },
-      }),
+      })
   );
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <FrontendClientContext.Provider value={client}>
-        {children}
-      </FrontendClientContext.Provider>
-    </QueryClientProvider>
+    <SSRSafeWrapper fallback={<>{children}</>}>
+      <QueryClientProvider client={queryClient}>
+        <FrontendClientContext.Provider value={client}>
+          {children}
+        </FrontendClientContext.Provider>
+      </QueryClientProvider>
+    </SSRSafeWrapper>
   );
 };

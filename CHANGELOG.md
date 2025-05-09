@@ -2,6 +2,14 @@
 
 # Changelog
 
+# [1.0.3] - 2025-05-01
+
+- Added Server-Side Rendering (SSR) compatibility
+- Added `SSRSafeWrapper` component to safely render components on the client-side only
+- Added `isSSR()` utility function to detect server-side rendering environments
+- Updated FrontendClientProvider to be SSR-safe
+- Added documentation for using the package in SSR environments like Next.js
+
 # [1.0.2] - 2025-04-24
 
 - Updating README to remove note about this package being in early preview

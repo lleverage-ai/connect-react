@@ -16,6 +16,7 @@ import { ConfigurableProps } from '@pipedream/sdk';
 import { ConfiguredProps } from '@pipedream/sdk';
 import { Context } from 'react';
 import { CSSProperties } from 'react';
+import { default as default_2 } from 'react';
 import { FC } from 'react';
 import { FetchStatus } from '@tanstack/react-query';
 import { GetAccountOpts } from '@pipedream/sdk';
@@ -371,6 +372,13 @@ export declare const InternalField: typeof InternalFieldComponent;
 
 declare function InternalFieldComponent<T extends ConfigurableProp>({ prop, idx, }: FieldInternalProps<T>): JSX_2.Element;
 
+/**
+ * Utility to check if the code is running in a server-side rendering (SSR) environment
+ *
+ * @returns {boolean} - True if running in SSR, false if in browser
+ */
+export declare const isSSR: () => boolean;
+
 export declare function Label<T extends ConfigurableProps, U extends ConfigurableProp>(props: LabelProps<T, U>): JSX_2.Element;
 
 declare type LabelProps<T extends ConfigurableProps, U extends ConfigurableProp> = {
@@ -449,6 +457,23 @@ export declare type Shadows = {
 };
 
 export declare const skippablePropTypes: string[];
+
+/**
+ * A wrapper component that ensures its children are only rendered in browser environments
+ * and not during server-side rendering.
+ */
+export declare const SSRSafeWrapper: default_2.FC<SSRSafeWrapperProps>;
+
+declare type SSRSafeWrapperProps = {
+    /**
+     * The component or elements to render only on the client side
+     */
+    children: ReactNode;
+    /**
+     * Optional fallback component to render during SSR
+     */
+    fallback?: ReactNode;
+};
 
 export declare type Theme = {
     borderRadius?: number | string;
