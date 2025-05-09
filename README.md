@@ -13,45 +13,6 @@
 Then use the `ComponentFormContainer` component in your app (see below for props
 and customization).
 
-## Server-Side Rendering (SSR) Compatibility
-
-This package supports Server-Side Rendering (SSR) environments like Next.js. You can use the built-in utilities to make your components SSR-safe:
-
-```tsx
-import {
-  SSRSafeWrapper,
-  FrontendClientProvider,
-} from "@pipedream/connect-react";
-
-// For components that should only render on the client-side:
-export default function MyComponent() {
-  return (
-    <SSRSafeWrapper fallback={<div>Loading Pipedream component...</div>}>
-      <FrontendClientProvider client={client}>
-        <ComponentFormContainer
-          userId={userId}
-          componentKey="slack-send-message"
-          configuredProps={configuredProps}
-          onUpdateConfiguredProps={setConfiguredProps}
-        />
-      </FrontendClientProvider>
-    </SSRSafeWrapper>
-  );
-}
-```
-
-The `SSRSafeWrapper` component renders its children only in browser environments and not during server-side rendering, preventing errors related to browser-specific APIs like `document` or `window`.
-
-Alternatively, you can check for SSR environments in your own code:
-
-```tsx
-import { isSSR } from "@pipedream/connect-react";
-
-if (!isSSR()) {
-  // Execute browser-only code
-}
-```
-
 > [!NOTE]
 > To run the example below, set the following environment variables in `.env.local`.
 >
@@ -60,7 +21,7 @@ if (!isSSR()) {
 > Make sure this matches the origin of your app, e.g.
 >
 > ```sh
-> # One domain — note the array
+> # One domain — note the array
 > PIPEDREAM_ALLOWED_ORIGINS=["https://example.com"]
 >
 > # Multiple domains
@@ -111,7 +72,7 @@ export async function fetchToken(opts: { externalUserId: string }) {
 }
 
 /* page.tsx */
-("use client");
+"use client";
 import { useState } from "react";
 import { createFrontendClient } from "@pipedream/sdk/browser";
 import {
