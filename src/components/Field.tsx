@@ -42,7 +42,7 @@ function FieldComponent<T extends ConfigurableProp>(props: FieldProps<T>) {
     return null;
   }
 
-  let labelText = prop.label || prop.name; // XXX capitalize so we don't need the default style?
+  let labelText = prop.label; // XXX capitalize so we don't need the default style?
   if (app) {
     labelText = `Connect ${app.name} account`;
   }

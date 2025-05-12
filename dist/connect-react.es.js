@@ -17028,7 +17028,7 @@ function NR(e) {
   }, { Label: c, Description: f, Errors: h } = a(), p = "app" in r.extra ? r.extra.app : void 0;
   if (p && !p.auth_type)
     return null;
-  let g = u.label || u.name;
+  let g = u.label;
   return p && (g = `Connect ${p.name} account`), /* @__PURE__ */ Mn("div", { ...o("field", l, e), children: [
     /* @__PURE__ */ se(c, { text: g, field: r, form: t }),
     /* @__PURE__ */ se(MR, { field: r, form: t }),
