@@ -15,14 +15,12 @@ const alwaysShowSdkErrors = ["ConfigurationError"];
 export type InternalComponentFormProps = {
   renderLoading?: () => React.ReactNode;
   renderError?: (error: Error) => React.ReactNode;
-  hideOptionalProps?: boolean;
 };
 
 // Component implementation with memoization
 function InternalComponentFormBase({
   renderLoading,
   renderError,
-  hideOptionalProps: hideOptionalPropsProp,
 }: InternalComponentFormProps = {}) {
   const formContext = useFormContext();
   const {
@@ -42,14 +40,7 @@ function InternalComponentFormBase({
     enableDebugging ||
     __sdkErrors.filter((e) => alwaysShowSdkErrors.includes(e.name)).length > 0;
 
-  const { hideOptionalProps: hideOptionalPropsContext, onSubmit } =
-    formContextProps;
-
-  // Use the directly passed prop if provided, otherwise fall back to the context value
-  const hideOptionalProps =
-    hideOptionalPropsProp !== undefined
-      ? hideOptionalPropsProp
-      : hideOptionalPropsContext;
+  const { hideOptionalProps, onSubmit } = formContextProps;
 
   const [sdkErrors, setSdkErrors] = useState<ConfigurablePropAlert[]>([]);
 
