@@ -17,7 +17,7 @@ import {
 
 export type ComponentFormProps<
   T extends ConfigurableProps,
-  U = ConfiguredProps<T>,
+  U = ConfiguredProps<T>
 > = {
   userId: string;
   component: V1Component<T>;
@@ -36,7 +36,7 @@ export type ComponentFormProps<
 };
 
 export function ComponentForm<T extends ConfigurableProps>(
-  props: ComponentFormProps<T>,
+  props: ComponentFormProps<T>
 ) {
   const { renderLoading, renderError, ...restProps } = props;
 

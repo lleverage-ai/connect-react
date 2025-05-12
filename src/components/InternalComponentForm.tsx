@@ -111,7 +111,7 @@ function InternalComponentFormBase({
     if (prop.optional) {
       const enabled = optionalPropIsEnabled(prop);
       optionalProps.push([prop, enabled]);
-      if (!enabled) {
+      if (hideOptionalProps || !enabled) {
         continue;
       }
     }
