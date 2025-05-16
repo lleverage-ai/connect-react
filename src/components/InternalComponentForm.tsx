@@ -163,7 +163,7 @@ function InternalComponentFormBase({
             <div>
               <div
                 onClick={toggleOptionalProps}
-                className="flex cursor-pointer flex-row items-center gap-1"
+                className="flex cursor-pointer flex-row items-center gap-1 mb-2"
                 aria-controls="optional-props-content"
                 aria-expanded={optionalPropsExpanded ? "true" : "false"}
                 data-state={optionalPropsExpanded ? "open" : "closed"}
@@ -201,7 +201,7 @@ function InternalComponentFormBase({
                     />
                   </svg>
                 )}
-                <span className="text-xs font-medium">Optional Props</span>
+                <span className="text-xs font-medium">Optional Properties</span>
               </div>
               {optionalPropsExpanded && (
                 <div

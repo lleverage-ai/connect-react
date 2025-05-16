@@ -16553,17 +16553,17 @@ function ER(e) {
 }
 const FR = (e) => {
   const { prop: t, enabled: r, onClick: u } = e, { getProps: o, theme: a } = fn(), l = {
-    color: a.colors.neutral60,
     display: "inline-flex",
     alignItems: "center",
+    justifyContent: "center",
     padding: `${a.spacing.baseUnit}px ${a.spacing.baseUnit * 1.5}px ${a.spacing.baseUnit}px ${a.spacing.baseUnit * 2.5}px`,
-    border: `1px solid ${a.colors.neutral30}`,
     borderRadius: a.borderRadius,
     cursor: "pointer",
     fontSize: "0.8125rem",
     fontWeight: 450,
     gap: a.spacing.baseUnit * 2,
-    textWrap: "nowrap"
+    textWrap: "nowrap",
+    transition: "background-color 0.2s, color 0.2s, border-color 0.2s"
   };
   return /* @__PURE__ */ An(
     "button",
@@ -16571,13 +16571,18 @@ const FR = (e) => {
       onClick: u,
       type: "button",
       ...o("optionalFieldButton", l, e),
+      className: `rounded-md border border-gray-100 ${r ? "bg-gray-100" : "bg-white"}`,
       children: [
         /* @__PURE__ */ re("span", { children: r ? "-" : "+" }),
         /* @__PURE__ */ re(
           "span",
           {
             style: {
-              marginRight: 8
+              marginRight: 8,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              maxWidth: "180px"
             },
             children: t.label || t.name
           }
@@ -17186,7 +17191,7 @@ ${Q.message}`
                     "div",
                     {
                       onClick: Ae,
-                      className: "flex cursor-pointer flex-row items-center gap-1",
+                      className: "flex cursor-pointer flex-row items-center gap-1 mb-2",
                       "aria-controls": "optional-props-content",
                       "aria-expanded": W ? "true" : "false",
                       "data-state": W ? "open" : "closed",
@@ -17230,7 +17235,7 @@ ${Q.message}`
                             )
                           }
                         ),
-                        /* @__PURE__ */ re("span", { className: "text-xs font-medium", children: "Optional Props" })
+                        /* @__PURE__ */ re("span", { className: "text-xs font-medium", children: "Optional Properties" })
                       ]
                     }
                   ),
