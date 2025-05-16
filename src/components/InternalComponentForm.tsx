@@ -43,6 +43,7 @@ function InternalComponentFormBase({
   const { hideOptionalProps, onSubmit } = formContextProps;
 
   const [sdkErrors, setSdkErrors] = useState<ConfigurablePropAlert[]>([]);
+  const [optionalPropsExpanded, setOptionalPropsExpanded] = useState(false);
 
   useEffect(() => {
     if (submitting) setSdkErrors([]);
@@ -134,6 +135,10 @@ function InternalComponentFormBase({
     </p>
   );
 
+  const toggleOptionalProps = () => {
+    setOptionalPropsExpanded(!optionalPropsExpanded);
+  };
+
   return (
     <ErrorBoundary
       fallback={(err) => (renderError ? renderError(err) : defaultErrorUI(err))}
@@ -157,26 +162,66 @@ function InternalComponentFormBase({
           {!hideOptionalProps && optionalProps.length ? (
             <div>
               <div
-                {...getProps("heading", baseHeadingStyles, formContextProps)}
+                onClick={toggleOptionalProps}
+                className="flex cursor-pointer flex-row items-center gap-1"
+                aria-controls="optional-props-content"
+                aria-expanded={optionalPropsExpanded ? "true" : "false"}
+                data-state={optionalPropsExpanded ? "open" : "closed"}
               >
-                Optional Props
-              </div>
-              <div
-                {...getProps(
-                  "optionalFields",
-                  baseOptionalFieldsStyles,
-                  formContextProps
+                {optionalPropsExpanded ? (
+                  <svg
+                    aria-hidden="true"
+                    focusable="false"
+                    data-prefix="fas"
+                    data-icon="caret-down"
+                    className="svg-inline--fa fa-caret-down fa-xs"
+                    role="img"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 320 512"
+                  >
+                    <path
+                      fill="currentColor"
+                      d="M137.4 374.6c12.5 12.5 32.8 12.5 45.3 0l128-128c9.2-9.2 11.9-22.9 6.9-34.9s-16.6-19.8-29.6-19.8L32 192c-12.9 0-24.6 7.8-29.6 19.8s-2.2 25.7 6.9 34.9l128 128z"
+                    />
+                  </svg>
+                ) : (
+                  <svg
+                    aria-hidden="true"
+                    focusable="false"
+                    data-prefix="fas"
+                    data-icon="caret-right"
+                    className="svg-inline--fa fa-caret-right fa-xs"
+                    role="img"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 256 512"
+                  >
+                    <path
+                      fill="currentColor"
+                      d="M246.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-128-128c-9.2-9.2-22.9-11.9-34.9-6.9s-19.8 16.6-19.8 29.6l0 256c0 12.9 7.8 24.6 19.8 29.6s25.7 2.2 34.9-6.9l128-128z"
+                    />
+                  </svg>
                 )}
-              >
-                {optionalProps.map(([prop, enabled]) => (
-                  <OptionalFieldButton
-                    key={prop.name}
-                    prop={prop}
-                    enabled={enabled}
-                    onClick={() => optionalPropSetEnabled(prop, !enabled)}
-                  />
-                ))}
+                <span className="text-xs font-medium">Optional Props</span>
               </div>
+              {optionalPropsExpanded && (
+                <div
+                  id="optional-props-content"
+                  {...getProps(
+                    "optionalFields",
+                    baseOptionalFieldsStyles,
+                    formContextProps
+                  )}
+                >
+                  {optionalProps.map(([prop, enabled]) => (
+                    <OptionalFieldButton
+                      key={prop.name}
+                      prop={prop}
+                      enabled={enabled}
+                      onClick={() => optionalPropSetEnabled(prop, !enabled)}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           ) : null}
           {showSdkErrors &&
