@@ -30,6 +30,7 @@ export type ComponentFormProps<
   onUpdateDynamicProps?: (dp: DynamicProps<T>) => void;
   hideOptionalProps?: boolean;
   hiddenOptionalProperties?: string[]; // Blacklist of property names to not display optional field buttons for
+  defaultOptionalProperties?: string[]; // List of optional property names to enable by default
   sdkResponse?: unknown | undefined;
   enableDebugging?: boolean;
   renderLoading?: InternalComponentFormProps["renderLoading"];

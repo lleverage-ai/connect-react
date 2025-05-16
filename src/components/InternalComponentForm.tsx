@@ -1,4 +1,8 @@
-import type { ConfigurableProp, ConfigurablePropAlert } from "@pipedream/sdk";
+import type {
+  ConfigurableProp,
+  ConfigurablePropAlert,
+  ConfiguredProps,
+} from "@pipedream/sdk";
 import { Suspense, useEffect, useState, memo } from "react";
 import type { CSSProperties, FormEventHandler } from "react";
 
@@ -34,6 +38,8 @@ function InternalComponentFormBase({
     sdkErrors: __sdkErrors,
     submitting,
     enableDebugging,
+    configuredProps,
+    setConfiguredProp,
   } = formContext;
 
   const showSdkErrors =
@@ -45,6 +51,7 @@ function InternalComponentFormBase({
     hideOptionalProps,
     onSubmit,
     hiddenOptionalProperties = [],
+    defaultOptionalProperties = [],
   } = formContextProps;
 
   const [sdkErrors, setSdkErrors] = useState<ConfigurablePropAlert[]>([]);
@@ -66,6 +73,46 @@ function InternalComponentFormBase({
       }
     }
   }, [__sdkErrors, submitting]);
+
+  // Set the default optional props to enabled on mount
+  useEffect(() => {
+    if (defaultOptionalProperties && defaultOptionalProperties.length > 0) {
+      configurableProps.forEach((prop: ConfigurableProp) => {
+        if (
+          prop.optional &&
+          defaultOptionalProperties.indexOf(prop.name) >= 0
+        ) {
+          // Enable the optional property
+          if (!optionalPropIsEnabled(prop)) {
+            optionalPropSetEnabled(prop, true);
+          }
+
+          // Check if this property has a special "_default" value that should be set to null
+          const propName = prop.name;
+          const propValue =
+            configuredProps[propName as keyof typeof configuredProps];
+
+          if (propValue === "_default") {
+            // Find the index of the property in configurableProps array
+            const propIndex = configurableProps.findIndex(
+              (p: ConfigurableProp) => p.name === prop.name
+            );
+            if (propIndex !== -1) {
+              // Set the property value to null
+              setConfiguredProp(propIndex, null);
+            }
+          }
+        }
+      });
+    }
+  }, [
+    configurableProps,
+    defaultOptionalProperties,
+    optionalPropIsEnabled,
+    optionalPropSetEnabled,
+    configuredProps,
+    setConfiguredProp,
+  ]);
 
   const { getComponents, getProps, theme } = useCustomize();
   const { OptionalFieldButton } = getComponents();

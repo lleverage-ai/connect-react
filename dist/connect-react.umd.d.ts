@@ -83,6 +83,7 @@ export declare function ComponentForm<T extends ConfigurableProps>(props: Compon
 export declare function ComponentFormContainer<T extends ConfigurableProps>(props: ComponentFormContainerProps<T>): string | number | boolean | JSX_2.Element | Iterable<ReactNode> | null | undefined;
 
 declare type ComponentFormContainerProps<T extends ConfigurableProps> = Omit<ComponentFormProps<T>, "component"> & {
+    defaultOptionalProperties?: string[];
     componentKey: string;
     renderLoading?: () => React.ReactNode;
     renderError?: (error: Error) => React.ReactNode;
@@ -100,6 +101,7 @@ declare type ComponentFormProps<T extends ConfigurableProps, U = ConfiguredProps
     onUpdateDynamicProps?: (dp: DynamicProps<T>) => void;
     hideOptionalProps?: boolean;
     hiddenOptionalProperties?: string[];
+    defaultOptionalProperties?: string[];
     sdkResponse?: unknown | undefined;
     enableDebugging?: boolean;
     renderLoading?: InternalComponentFormProps["renderLoading"];

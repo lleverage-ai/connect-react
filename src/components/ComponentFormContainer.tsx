@@ -11,6 +11,7 @@ type ComponentFormContainerProps<T extends ConfigurableProps> = Omit<
   ComponentFormProps<T>,
   "component"
 > & {
+  defaultOptionalProperties?: string[];
   componentKey: string;
   renderLoading?: () => React.ReactNode;
   renderError?: (error: Error) => React.ReactNode;
@@ -18,7 +19,7 @@ type ComponentFormContainerProps<T extends ConfigurableProps> = Omit<
 };
 
 export function ComponentFormContainer<T extends ConfigurableProps>(
-  props: ComponentFormContainerProps<T>,
+  props: ComponentFormContainerProps<T>
 ) {
   const { isLoading, error, component } = useComponent({
     key: props.componentKey,
