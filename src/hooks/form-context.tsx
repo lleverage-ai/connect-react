@@ -126,11 +126,17 @@ export const FormContextProvider = <T extends ConfigurableProps>({
   // TODO: Added this change so that any configured props that are optional props that have a value are displayed
   useEffect(() => {
     const newEnabledProps: Record<string, boolean> = {};
+    const hiddenOptionalProperties = formProps.hiddenOptionalProperties || [];
 
     const configurableProps = component.configurable_props || [];
 
     for (const prop of configurableProps) {
       if (prop.optional) {
+        // Skip properties in the hiddenOptionalProperties blacklist
+        if (hiddenOptionalProperties.some((h) => h === prop.name)) {
+          continue;
+        }
+
         const propName = prop.name as keyof ConfiguredProps<T>;
         const propValue = configuredProps[propName];
 
@@ -142,10 +148,6 @@ export const FormContextProvider = <T extends ConfigurableProps>({
 
     setEnabledOptionalProps(newEnabledProps);
   }, [component.key, __configuredProps]);
-  // TODO: instead of this:
-  // useEffect(() => {
-  //   setEnabledOptionalProps({});
-  // }, [component.key]);
 
   // XXX pass this down? (in case we make it hash or set backed, but then also provide {add,remove} instead of set)
   const optionalPropIsEnabled = (prop: ConfigurableProp) =>
@@ -241,7 +243,7 @@ export const FormContextProvider = <T extends ConfigurableProps>({
       prop.optional ||
       prop.hidden ||
       prop.disabled ||
-      skippablePropTypes.includes(prop.type)
+      skippablePropTypes.indexOf(prop.type) >= 0
     )
       return [];
     if (prop.type === "app") {
@@ -353,7 +355,7 @@ export const FormContextProvider = <T extends ConfigurableProps>({
       if (prop.hidden) {
         continue;
       }
-      if (skippablePropTypes.includes(prop.type)) {
+      if (skippablePropTypes.indexOf(prop.type) >= 0) {
         continue;
       }
       // if prop.optional and not shown, we skip and do on un-collapse
@@ -420,6 +422,12 @@ export const FormContextProvider = <T extends ConfigurableProps>({
   };
 
   const optionalPropSetEnabled = (prop: ConfigurableProp, enabled: boolean) => {
+    // Don't enable if this property is in the hiddenOptionalProperties blacklist
+    const hiddenOptionalProperties = formProps.hiddenOptionalProperties || [];
+    if (enabled && hiddenOptionalProperties.some((h) => h === prop.name)) {
+      return;
+    }
+
     const newEnabledOptionalProps = {
       ...enabledOptionalProps,
     };
@@ -451,7 +459,7 @@ export const FormContextProvider = <T extends ConfigurableProps>({
         !prop ||
         prop.optional ||
         prop.hidden ||
-        skippablePropTypes.includes(prop.type)
+        skippablePropTypes.indexOf(prop.type) >= 0
       )
         continue;
       const value = configuredProps[prop.name as keyof ConfiguredProps<T>];

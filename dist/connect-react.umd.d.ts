@@ -99,6 +99,7 @@ declare type ComponentFormProps<T extends ConfigurableProps, U = ConfiguredProps
     onUpdateConfiguredProps?: (v: U) => void;
     onUpdateDynamicProps?: (dp: DynamicProps<T>) => void;
     hideOptionalProps?: boolean;
+    hiddenOptionalProperties?: string[];
     sdkResponse?: unknown | undefined;
     enableDebugging?: boolean;
     renderLoading?: InternalComponentFormProps["renderLoading"];

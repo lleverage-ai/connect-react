@@ -38,9 +38,14 @@ function InternalComponentFormBase({
 
   const showSdkErrors =
     enableDebugging ||
-    __sdkErrors.filter((e) => alwaysShowSdkErrors.includes(e.name)).length > 0;
+    __sdkErrors.filter((e) => alwaysShowSdkErrors.indexOf(e.name) >= 0).length >
+      0;
 
-  const { hideOptionalProps, onSubmit } = formContextProps;
+  const {
+    hideOptionalProps,
+    onSubmit,
+    hiddenOptionalProperties = [],
+  } = formContextProps;
 
   const [sdkErrors, setSdkErrors] = useState<ConfigurablePropAlert[]>([]);
   const [optionalPropsExpanded, setOptionalPropsExpanded] = useState(false);
@@ -106,12 +111,17 @@ function InternalComponentFormBase({
     if (prop.hidden) {
       continue;
     }
-    if (skippablePropTypes.includes(prop.type)) {
+    if (skippablePropTypes.indexOf(prop.type) >= 0) {
       continue;
     }
     if (prop.optional) {
       const enabled = optionalPropIsEnabled(prop);
-      optionalProps.push([prop, enabled]);
+
+      // Skip adding to optionalProps if the property name is in the hiddenOptionalProperties list
+      if (!hiddenOptionalProperties.some((h) => h === prop.name)) {
+        optionalProps.push([prop, enabled]);
+      }
+
       if (hideOptionalProps || !enabled) {
         continue;
       }
@@ -141,7 +151,9 @@ function InternalComponentFormBase({
 
   return (
     <ErrorBoundary
-      fallback={(err) => (renderError ? renderError(err) : defaultErrorUI(err))}
+      fallback={(err: unknown) =>
+        renderError ? renderError(err as Error) : defaultErrorUI(err)
+      }
     >
       <Suspense
         fallback={renderLoading ? renderLoading() : <p>Loading form...</p>}
@@ -212,14 +224,22 @@ function InternalComponentFormBase({
                     formContextProps
                   )}
                 >
-                  {optionalProps.map(([prop, enabled]) => (
-                    <OptionalFieldButton
-                      key={prop.name}
-                      prop={prop}
-                      enabled={enabled}
-                      onClick={() => optionalPropSetEnabled(prop, !enabled)}
-                    />
-                  ))}
+                  {optionalProps
+                    .filter(([prop]) => {
+                      // Double-check that no blacklisted properties are included
+                      const isBlacklisted = hiddenOptionalProperties.some(
+                        (h) => h === prop.name
+                      );
+                      return !isBlacklisted;
+                    })
+                    .map(([prop, enabled]) => (
+                      <OptionalFieldButton
+                        key={prop.name}
+                        prop={prop}
+                        enabled={enabled}
+                        onClick={() => optionalPropSetEnabled(prop, !enabled)}
+                      />
+                    ))}
                 </div>
               )}
             </div>
