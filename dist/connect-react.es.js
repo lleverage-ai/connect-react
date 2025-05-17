@@ -16394,8 +16394,8 @@ function xP({
   sn(() => {
     b(t);
   }, [t]), sn(() => {
-    w(f), f === "_default" && p(null);
-  }, [f, p]);
+    w(f);
+  }, [f]);
   const F = {
     styles: {
       container: (M) => ({
