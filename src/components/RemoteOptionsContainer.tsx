@@ -116,9 +116,11 @@ export function RemoteOptionsContainer({
 
       const newOptions = [];
       const allValues = new Set(pageable.values);
+      let hasOverlap = false;
       for (const o of _options || []) {
         const value = typeof o === "string" ? o : o.value;
         if (allValues.has(value)) {
+          hasOverlap = true;
           continue;
         }
         allValues.add(value);
@@ -133,7 +135,8 @@ export function RemoteOptionsContainer({
           data,
           values: allValues,
         });
-      } else {
+      }
+      if (hasOverlap || newOptions.length === 0) {
         setCanLoadMore(false);
       }
       return data;
@@ -149,10 +152,10 @@ export function RemoteOptionsContainer({
   const placeholder = error
     ? error.message
     : disableQueryDisabling
-      ? "Click to configure"
-      : !queryEnabled
-        ? "Configure props above first"
-        : undefined;
+    ? "Click to configure"
+    : !queryEnabled
+    ? "Configure props above first"
+    : undefined;
   const isDisabled = disableQueryDisabling ? false : !queryEnabled;
 
   return (
