@@ -33,6 +33,8 @@ export type ComponentFormProps<
   defaultOptionalProperties?: string[]; // List of optional property names to enable by default
   sdkResponse?: unknown | undefined;
   enableDebugging?: boolean;
+  /** Disable the entire form (read-only) */
+  disabled?: boolean;
   renderLoading?: InternalComponentFormProps["renderLoading"];
   renderError?: InternalComponentFormProps["renderError"];
 };
@@ -40,11 +42,12 @@ export type ComponentFormProps<
 export function ComponentForm<T extends ConfigurableProps>(
   props: ComponentFormProps<T>
 ) {
-  const { renderLoading, renderError, ...restProps } = props;
+  const { renderLoading, renderError, disabled, ...restProps } = props;
 
   return (
     <FormContextProvider props={restProps}>
       <InternalComponentForm
+        disabled={disabled}
         renderLoading={renderLoading}
         renderError={renderError}
       />

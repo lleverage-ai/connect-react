@@ -16,6 +16,8 @@ type ComponentFormContainerProps<T extends ConfigurableProps> = Omit<
   renderLoading?: () => React.ReactNode;
   renderError?: (error: Error) => React.ReactNode;
   renderNotFound?: () => React.ReactNode;
+  /** Disable the entire form (read-only) */
+  disabled?: boolean;
 };
 
 export function ComponentFormContainer<T extends ConfigurableProps>(

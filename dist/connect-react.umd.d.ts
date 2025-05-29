@@ -88,6 +88,8 @@ declare type ComponentFormContainerProps<T extends ConfigurableProps> = Omit<Com
     renderLoading?: () => React.ReactNode;
     renderError?: (error: Error) => React.ReactNode;
     renderNotFound?: () => React.ReactNode;
+    /** Disable the entire form (read-only) */
+    disabled?: boolean;
 };
 
 declare type ComponentFormProps<T extends ConfigurableProps, U = ConfiguredProps<T>> = {
@@ -104,6 +106,8 @@ declare type ComponentFormProps<T extends ConfigurableProps, U = ConfiguredProps
     defaultOptionalProperties?: string[];
     sdkResponse?: unknown | undefined;
     enableDebugging?: boolean;
+    /** Disable the entire form (read-only) */
+    disabled?: boolean;
     renderLoading?: InternalComponentFormProps["renderLoading"];
     renderError?: InternalComponentFormProps["renderError"];
 };

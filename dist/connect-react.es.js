@@ -17317,10 +17317,11 @@ ${x.message}`
 }
 const ZP = eo(zP);
 function YP(e) {
-  const { renderLoading: t, renderError: r, ...u } = e;
-  return /* @__PURE__ */ ne(vE, { props: u, children: /* @__PURE__ */ ne(
+  const { renderLoading: t, renderError: r, disabled: u, ...o } = e;
+  return /* @__PURE__ */ ne(vE, { props: o, children: /* @__PURE__ */ ne(
     ZP,
     {
+      disabled: u,
       renderLoading: t,
       renderError: r
     }
