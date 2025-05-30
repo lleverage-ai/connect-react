@@ -17,14 +17,12 @@ import { InternalField } from "./InternalField";
 const alwaysShowSdkErrors = ["ConfigurationError"];
 
 export type InternalComponentFormProps = {
-  disabled?: boolean;
   renderLoading?: () => React.ReactNode;
   renderError?: (error: Error) => React.ReactNode;
 };
 
 // Component implementation with memoization
 function InternalComponentFormBase({
-  disabled = false,
   renderLoading,
   renderError,
 }: InternalComponentFormProps = {}) {
@@ -121,11 +119,6 @@ function InternalComponentFormBase({
   const baseStyles: CSSProperties = {
     display: "flex",
     flexDirection: "column",
-    ...(disabled && {
-      pointerEvents: "none",
-      opacity: 0.6,
-      userSelect: "none",
-    }),
   };
 
   const baseOptionalFieldsStyles: CSSProperties = {
@@ -144,7 +137,7 @@ function InternalComponentFormBase({
   };
 
   const _onSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
-    if (onSubmit && !disabled) {
+    if (onSubmit) {
       e.preventDefault();
 
       if (isValid) {
@@ -200,9 +193,7 @@ function InternalComponentFormBase({
   );
 
   const toggleOptionalProps = () => {
-    if (!disabled) {
-      setOptionalPropsExpanded(!optionalPropsExpanded);
-    }
+    setOptionalPropsExpanded(!optionalPropsExpanded);
   };
 
   return (
@@ -293,9 +284,7 @@ function InternalComponentFormBase({
                         key={prop.name}
                         prop={prop}
                         enabled={enabled}
-                        onClick={() =>
-                          !disabled && optionalPropSetEnabled(prop, !enabled)
-                        }
+                        onClick={() => optionalPropSetEnabled(prop, !enabled)}
                       />
                     ))}
                 </div>

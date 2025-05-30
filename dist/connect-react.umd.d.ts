@@ -363,10 +363,9 @@ export declare function getReactSelectTheme(theme: CustomThemeConfig | undefined
 
 export declare const InternalComponentForm: MemoExoticComponent<typeof InternalComponentFormBase>;
 
-declare function InternalComponentFormBase({ disabled, renderLoading, renderError, }?: InternalComponentFormProps): JSX_2.Element;
+declare function InternalComponentFormBase({ renderLoading, renderError, }?: InternalComponentFormProps): JSX_2.Element;
 
 declare type InternalComponentFormProps = {
-    disabled?: boolean;
     renderLoading?: () => React.ReactNode;
     renderError?: (error: Error) => React.ReactNode;
 };
