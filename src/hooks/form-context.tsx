@@ -140,7 +140,7 @@ export const FormContextProvider = <T extends ConfigurableProps>({
         const propName = prop.name as keyof ConfiguredProps<T>;
         const propValue = configuredProps[propName];
 
-        if (propValue !== undefined && propValue !== null && propValue !== "") {
+        if (propValue !== undefined && propValue !== null) {
           newEnabledProps[prop.name] = true;
         }
       }
