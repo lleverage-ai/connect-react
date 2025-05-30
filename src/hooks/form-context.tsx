@@ -125,7 +125,9 @@ export const FormContextProvider = <T extends ConfigurableProps>({
 
   // TODO: Added this change so that any configured props that are optional props that have a value are displayed
   useEffect(() => {
-    const newEnabledProps: Record<string, boolean> = {};
+    const newEnabledProps: Record<string, boolean> = {
+      ...enabledOptionalProps,
+    };
     const hiddenOptionalProperties = formProps.hiddenOptionalProperties || [];
 
     const configurableProps = component.configurable_props || [];
@@ -140,7 +142,13 @@ export const FormContextProvider = <T extends ConfigurableProps>({
         const propName = prop.name as keyof ConfiguredProps<T>;
         const propValue = configuredProps[propName];
 
-        if (propValue !== undefined && propValue !== null) {
+        // Only add to enabled props if it has a value and isn't already enabled
+        // This preserves manually enabled props even if they don't have values yet
+        if (
+          propValue !== undefined &&
+          propValue !== null &&
+          !newEnabledProps[prop.name]
+        ) {
           newEnabledProps[prop.name] = true;
         }
       }
