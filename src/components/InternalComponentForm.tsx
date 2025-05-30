@@ -153,6 +153,22 @@ function InternalComponentFormBase({
 
   const shownProps: [ConfigurableProp, number][] = [];
   const optionalProps: [ConfigurableProp, boolean][] = [];
+
+  // First pass: collect all non-optional props
+  for (let idx = 0; idx < configurableProps.length; idx++) {
+    const prop = configurableProps[idx];
+    if (prop.hidden) {
+      continue;
+    }
+    if (skippablePropTypes.indexOf(prop.type) >= 0) {
+      continue;
+    }
+    if (!prop.optional) {
+      shownProps.push([prop, idx]);
+    }
+  }
+
+  // Second pass: handle optional props
   for (let idx = 0; idx < configurableProps.length; idx++) {
     const prop = configurableProps[idx];
     if (prop.hidden) {
@@ -169,11 +185,11 @@ function InternalComponentFormBase({
         optionalProps.push([prop, enabled]);
       }
 
-      if (hideOptionalProps || !enabled) {
-        continue;
+      if (!hideOptionalProps && enabled) {
+        // Add enabled optional props after all required props
+        shownProps.push([prop, idx]);
       }
     }
-    shownProps.push([prop, idx]);
   }
 
   const defaultErrorUI = (err: any) => (
